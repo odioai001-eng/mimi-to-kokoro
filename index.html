@@ -319,7 +319,7 @@
       <div class="eyebrow">きょうの一言（にしいてください・にしなくてもいいです）</div>
       <p class="hint-text" style="margin-top:-6px; margin-bottom:12px;">今日感じたことを、少しだけ書いてみましょう。あとでご家族が読めます。</p>
       <textarea id="note-input" placeholder="たとえば：むかしの遊びの話をしたら、楽しかった。"></textarea>
-      <button class="btn btn-outline" style="margin-top:12px;" onclick="voiceFillNote()">🎙️ 話して入力する</button>
+      <button class="btn btn-outline" style="margin-top:12px;" onclick="voiceFillTextarea('note-input', this)">🎙️ 話して入力する</button>
     </div>
     <div class="teaser" id="complete-teaser"></div>
     <button class="btn btn-primary" style="margin-top:20px;" onclick="finishComplete()">ホームへもどる</button>
@@ -376,8 +376,10 @@
       <div id="media-file-preview"></div>
       <p class="hint-text" style="margin-bottom:6px;">質問（例：これは誰でしょう？）</p>
       <textarea id="media-question-input" placeholder="これは誰でしょう？どこの写真でしょう？"></textarea>
-      <p class="hint-text" style="margin:14px 0 6px;">答え・説明（あとで表示されます。空でも構いません）</p>
+      <button class="btn btn-outline" style="margin-top:10px;" onclick="voiceFillTextarea('media-question-input', this)">🎙️ 話して入力する</button>
+      <p class="hint-text" style="margin:18px 0 6px;">答え・説明（あとで表示されます。空でも構いません）</p>
       <textarea id="media-answer-input" placeholder="例：昭和50年、家族旅行で行った熱海にて"></textarea>
+      <button class="btn btn-outline" style="margin-top:10px;" onclick="voiceFillTextarea('media-answer-input', this)">🎙️ 話して入力する</button>
       <button class="btn btn-primary" style="margin-top:16px;" onclick="saveMediaItem()">保存する</button>
       <p class="note" id="media-save-note" style="display:none; margin-top:10px;"></p>
     </div>
@@ -947,17 +949,21 @@ function finishComplete(){
   if(val){ state.notes[key] = val; saveState(); }
   go('home');
 }
-function voiceFillNote(){
+function voiceFillTextarea(textareaId, btn){
   const R = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!R){ alert('この端末では音声入力が使えません。文字を直接入力してください。'); return; }
+  const ta = document.getElementById(textareaId);
   const r = new R();
   r.lang = 'ja-JP';
   r.interimResults = false;
+  if(btn){ btn.disabled = true; btn.dataset.originalLabel = btn.textContent; btn.textContent = '🎙️ ききとり中…'; }
+  const restore = ()=>{ if(btn){ btn.disabled = false; btn.textContent = btn.dataset.originalLabel; } };
   r.onresult = (e)=>{
     const text = e.results[0][0].transcript;
-    const ta = document.getElementById('note-input');
     ta.value = (ta.value ? ta.value+' ' : '') + text;
   };
+  r.onerror = ()=>{ restore(); };
+  r.onend = restore;
   r.start();
 }
 
