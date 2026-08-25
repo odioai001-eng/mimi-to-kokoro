@@ -142,7 +142,7 @@
     width:52px; height:52px; min-width:52px; border-radius:50%; border:2px solid var(--card-line);
     background:var(--card); font-size:24px; cursor:pointer; box-shadow:var(--shadow); color:var(--ink);
   }
-  .header-title{font-size:calc(24px * var(--fs-scale));}
+  .header-title{font-size:calc(24px * var(--fs-scale)); flex:1;}
 
   .card{background:var(--card); border:2px solid var(--card-line); border-radius:var(--radius); padding:28px 24px; box-shadow:var(--shadow); margin-bottom:20px;}
   .eyebrow{font-size:calc(13px * var(--fs-scale)); letter-spacing:.08em; color:var(--persimmon-deep); font-weight:700; margin-bottom:10px;}
@@ -223,6 +223,32 @@
   .caption-interim{font-size:calc(26px*var(--ear-scale,1) * var(--fs-scale)); color:var(--ink-soft);}
   .caption-empty{color:var(--ink-soft); font-size:calc(17px*var(--fs-scale)); text-align:center; padding:40px 10px;}
 
+  .ear-fab{
+    position:fixed; right:20px; bottom:24px; width:64px; height:64px; border-radius:50%;
+    border:none; background:var(--indigo); color:#fff; font-size:28px; cursor:pointer;
+    box-shadow:0 8px 20px rgba(58,46,34,0.28); z-index:40;
+  }
+  .ear-fab.hidden{display:none;}
+  .ear-overlay{
+    position:fixed; left:0; right:0; bottom:0; max-width:640px; margin:0 auto;
+    background:var(--card); border-top-left-radius:26px; border-top-right-radius:26px;
+    box-shadow:0 -12px 32px rgba(0,0,0,0.22); z-index:45;
+    height:62vh; display:flex; flex-direction:column;
+    transform:translateY(100%); transition:transform .3s ease;
+  }
+  .ear-overlay.open{transform:translateY(0);}
+  .ear-overlay-handle{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:16px 20px; border-bottom:2px solid var(--card-line);
+  }
+  .ear-overlay-title{font-size:calc(19px*var(--fs-scale)); font-weight:700; color:var(--indigo-deep); font-family:"Zen Maru Gothic",sans-serif;}
+  .ear-overlay-close{
+    border:2px solid var(--card-line); background:var(--paper); border-radius:14px;
+    padding:10px 16px; font-size:calc(15px*var(--fs-scale)); cursor:pointer; color:var(--ink);
+  }
+  .ear-overlay-body{padding:18px 20px 24px; overflow-y:auto; flex:1;}
+  .ear-overlay .caption-box{max-height:26vh; min-height:140px;}
+
   .settings-row{display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--card-line);}
   .settings-row:last-child{border-bottom:none;}
   .note{font-size:calc(14px*var(--fs-scale)); color:var(--ink-soft); line-height:1.8;}
@@ -242,7 +268,7 @@
     <div class="greeting" id="home-greeting"></div>
     <h1 class="today-date" id="home-date"></h1>
 
-    <button class="pillar pillar-ear" onclick="go('ear')">
+    <button class="pillar pillar-ear" onclick="openEarOverlay()">
       <span class="pillar-badge" style="background:var(--indigo);">聞こえの手助け</span>
       <span class="pillar-icon">👂</span>
       <div class="pillar-title">みみサポート</div>
@@ -265,35 +291,6 @@
     </div>
 
     <div class="teaser" id="home-teaser" style="display:none;"></div>
-  </section>
-
-  <!-- EAR SUPPORT -->
-  <section id="view-ear" class="view">
-    <div class="header-row">
-      <button class="back-btn" onclick="stopListening(); go('home')" aria-label="もどる">←</button>
-      <h2 class="header-title">みみサポート</h2>
-    </div>
-
-    <div class="card">
-      <div class="eyebrow indigo">文字の大きさ</div>
-      <div class="ear-controls">
-        <button class="fs-btn" data-scale="0.8" onclick="setEarScale(0.8, this)">小</button>
-        <button class="fs-btn active" data-scale="1" onclick="setEarScale(1, this)">中</button>
-        <button class="fs-btn" data-scale="1.3" onclick="setEarScale(1.3, this)">大</button>
-        <button class="fs-btn" data-scale="1.7" onclick="setEarScale(1.7, this)">特大</button>
-      </div>
-    </div>
-
-    <button class="listen-btn" id="listen-btn" onclick="toggleListening()">
-      <span id="listen-icon">🎙️</span><span id="listen-label">はなしかけてもらう</span>
-    </button>
-
-    <div class="caption-box" id="caption-box">
-      <div class="caption-empty" id="caption-empty">ボタンを押すと、相手の話した内容を<br>ここに大きな文字で表示します。</div>
-    </div>
-
-    <button class="btn btn-ghost" onclick="clearCaptions()">文字を消す</button>
-    <p class="note" id="ear-support-note" style="display:none;"></p>
   </section>
 
   <!-- LESSON FLOW -->
@@ -354,6 +351,31 @@
     </div>
   </section>
 
+</div>
+
+<button class="ear-fab hidden" id="ear-fab" onclick="openEarOverlay()" aria-label="みみサポートを開く">👂</button>
+
+<div class="ear-overlay" id="ear-overlay">
+  <div class="ear-overlay-handle">
+    <span class="ear-overlay-title">👂 みみサポート</span>
+    <button class="ear-overlay-close" onclick="closeEarOverlay()" aria-label="とじる">とじる ✕</button>
+  </div>
+  <div class="ear-overlay-body">
+    <div class="ear-controls">
+      <button class="fs-btn" data-scale="0.8" onclick="setEarScale(0.8, this)">小</button>
+      <button class="fs-btn active" data-scale="1" onclick="setEarScale(1, this)">中</button>
+      <button class="fs-btn" data-scale="1.3" onclick="setEarScale(1.3, this)">大</button>
+      <button class="fs-btn" data-scale="1.7" onclick="setEarScale(1.7, this)">特大</button>
+    </div>
+    <button class="listen-btn" id="listen-btn" onclick="toggleListening()">
+      <span id="listen-icon">🎙️</span><span id="listen-label">はなしかけてもらう</span>
+    </button>
+    <div class="caption-box" id="caption-box">
+      <div class="caption-empty" id="caption-empty">ボタンを押すと、相手の話した内容を<br>ここに大きな文字で表示します。</div>
+    </div>
+    <button class="btn btn-ghost" onclick="clearCaptions()">文字を消す</button>
+    <p class="note" id="ear-support-note" style="display:none;"></p>
+  </div>
 </div>
 
 <script>
@@ -484,6 +506,22 @@ function go(view){
   document.getElementById('view-'+view).classList.add('active');
   window.scrollTo(0,0);
   if(view==='home') renderHome();
+  const showFab = (view==='lesson' || view==='complete');
+  document.getElementById('ear-fab').classList.toggle('hidden', !showFab);
+  if(!showFab) closeEarOverlay();
+}
+
+function openEarOverlay(){
+  document.getElementById('ear-overlay').classList.add('open');
+  document.getElementById('ear-fab').classList.add('hidden');
+}
+function closeEarOverlay(){
+  document.getElementById('ear-overlay').classList.remove('open');
+  stopListening();
+  const view = document.querySelector('.view.active').id;
+  if(view==='view-lesson' || view==='view-complete'){
+    document.getElementById('ear-fab').classList.remove('hidden');
+  }
 }
 
 function renderHome(){
