@@ -356,6 +356,14 @@
       <p class="note" style="margin-top:10px;">写真・動画・PDFを登録すると、「思い出のお話」の時間にその内容を使ったクイズが出るようになります（ご家族の方が事前に登録してください）。</p>
     </div>
     <div class="card">
+      <div class="eyebrow">バックアップ（ご家族の方へ）</div>
+      <p class="hint-text" style="margin-top:-6px;">記録・思い出データベースは、この端末にしか保存されません。特にiPadは、しばらく開かないとデータが消えることがあるため、時々バックアップを保存しておくと安心です。</p>
+      <button class="btn btn-outline" style="margin-top:14px;" onclick="exportBackup()">バックアップを保存する</button>
+      <p class="hint-text" style="margin:16px 0 6px;">バックアップから復元する（今の内容は上書きされます）</p>
+      <input type="file" id="backup-file-input" accept="application/json,.json">
+      <p class="note" id="backup-note" style="display:none;"></p>
+    </div>
+    <div class="card">
       <div class="settings-row">
         <span>記録をはじめからやり直す</span>
         <button class="btn btn-outline" style="width:auto; margin:0; padding:12px 18px; font-size:calc(15px*var(--fs-scale));" onclick="resetProgress()">リセット</button>
@@ -640,6 +648,78 @@ async function removeMediaItem(id){
   if(!confirm('この項目を削除しますか？')) return;
   await deleteMediaItemFromDB(id);
   await loadMediaItems();
+}
+
+/* ---- Backup export / import ---- */
+function blobToDataURL(blob){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>resolve(reader.result);
+    reader.onerror = ()=>reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+async function exportBackup(){
+  const noteEl = document.getElementById('backup-note');
+  noteEl.style.display = 'block';
+  noteEl.textContent = '書き出しています…';
+  try{
+    const media = await Promise.all(mediaItems.map(async item=>({
+      id:item.id, type:item.type, question:item.question, answer:item.answer,
+      createdAt:item.createdAt, dataUrl: await blobToDataURL(item.blob)
+    })));
+    const payload = {app:'mimi-to-kokoro', version:1, exportedAt:Date.now(), state, media};
+    const blob = new Blob([JSON.stringify(payload)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const d = new Date();
+    const fname = `mimi-to-kokoro-backup-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+    const a = document.createElement('a');
+    a.href = url; a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 5000);
+    noteEl.textContent = `保存しました（${fname}）。分かりやすい場所に保管してください。`;
+  }catch(e){
+    noteEl.textContent = '書き出しに失敗しました。もう一度お試しください。';
+  }
+}
+async function importBackupFile(e){
+  const file = e.target.files[0];
+  const noteEl = document.getElementById('backup-note');
+  if(!file) return;
+  noteEl.style.display = 'block';
+  if(!confirm('今のレッスン記録・思い出データベースは、このバックアップの内容で上書きされます。よろしいですか？')){
+    e.target.value = '';
+    return;
+  }
+  noteEl.textContent = '読み込んでいます…';
+  try{
+    const text = await file.text();
+    const payload = JSON.parse(text);
+    if(payload.state){
+      state = Object.assign(defaultState(), payload.state);
+      saveState();
+    }
+    if(Array.isArray(payload.media)){
+      const db = await openMediaDB();
+      await new Promise((resolve, reject)=>{
+        const tx = db.transaction(MEDIA_STORE, 'readwrite');
+        tx.objectStore(MEDIA_STORE).clear();
+        tx.oncomplete = resolve;
+        tx.onerror = ()=>reject(tx.error);
+      });
+      for(const m of payload.media){
+        const blob = await (await fetch(m.dataUrl)).blob();
+        await addMediaItemToDB({id:m.id, type:m.type, question:m.question, answer:m.answer, createdAt:m.createdAt, blob});
+      }
+      await loadMediaItems();
+    }
+    noteEl.textContent = '復元しました。';
+  }catch(err){
+    noteEl.textContent = '読み込みに失敗しました。バックアップファイルが正しいか確認してください。';
+  }
+  e.target.value = '';
 }
 
 function loadState(){
@@ -1095,6 +1175,7 @@ document.documentElement.style.setProperty('--ear-scale', 1);
   });
 })();
 document.getElementById('media-file-input').addEventListener('change', onMediaFileChange);
+document.getElementById('backup-file-input').addEventListener('change', importBackupFile);
 loadMediaItems();
 renderHome();
 </script>
