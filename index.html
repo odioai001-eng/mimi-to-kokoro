@@ -249,9 +249,14 @@
   .ear-overlay-body{padding:18px 20px 24px; overflow-y:auto; flex:1;}
   .ear-overlay .caption-box{max-height:26vh; min-height:140px;}
 
-  .settings-row{display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--card-line);}
+  .settings-row{display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--card-line); gap:12px;}
   .settings-row:last-child{border-bottom:none;}
   .note{font-size:calc(14px*var(--fs-scale)); color:var(--ink-soft); line-height:1.8;}
+
+  input[type="file"]{
+    width:100%; padding:12px; border-radius:14px; border:2px dashed var(--card-line);
+    background:var(--paper); color:var(--ink-soft); font-size:calc(14px*var(--fs-scale)); margin-bottom:14px;
+  }
 </style>
 
 <div class="app">
@@ -345,9 +350,40 @@
     </div>
     <div class="card">
       <div class="settings-row">
+        <span>思い出データベースを管理する</span>
+        <button class="btn btn-outline" style="width:auto; margin:0; padding:12px 18px; font-size:calc(15px*var(--fs-scale));" onclick="go('media')">開く</button>
+      </div>
+      <p class="note" style="margin-top:10px;">写真・動画・PDFを登録すると、「思い出のお話」の時間にその内容を使ったクイズが出るようになります（ご家族の方が事前に登録してください）。</p>
+    </div>
+    <div class="card">
+      <div class="settings-row">
         <span>記録をはじめからやり直す</span>
         <button class="btn btn-outline" style="width:auto; margin:0; padding:12px 18px; font-size:calc(15px*var(--fs-scale));" onclick="resetProgress()">リセット</button>
       </div>
+    </div>
+  </section>
+
+  <!-- MEDIA LIBRARY -->
+  <section id="view-media" class="view">
+    <div class="header-row">
+      <button class="back-btn" onclick="go('settings')" aria-label="もどる">←</button>
+      <h2 class="header-title">思い出データベース</h2>
+    </div>
+    <div class="card">
+      <div class="eyebrow">新しく追加する</div>
+      <p class="hint-text" style="margin-top:-6px; margin-bottom:14px;">写真・動画・PDFを1つ選び、質問と答えを入力してください。</p>
+      <input type="file" id="media-file-input" accept="image/*,video/*,application/pdf">
+      <div id="media-file-preview"></div>
+      <p class="hint-text" style="margin-bottom:6px;">質問（例：これは誰でしょう？）</p>
+      <textarea id="media-question-input" placeholder="これは誰でしょう？どこの写真でしょう？"></textarea>
+      <p class="hint-text" style="margin:14px 0 6px;">答え・説明（あとで表示されます。空でも構いません）</p>
+      <textarea id="media-answer-input" placeholder="例：昭和50年、家族旅行で行った熱海にて"></textarea>
+      <button class="btn btn-primary" style="margin-top:16px;" onclick="saveMediaItem()">保存する</button>
+      <p class="note" id="media-save-note" style="display:none; margin-top:10px;"></p>
+    </div>
+    <div class="card">
+      <div class="eyebrow">登録ずみのアイテム（<span id="media-count">0</span>件）</div>
+      <div id="media-list"></div>
     </div>
   </section>
 
@@ -474,6 +510,135 @@ let recognizer = null;
 let listening = false;
 let wordStepDone = false;
 let brainStepDone = false;
+let mediaItems = [];
+let pendingMediaFile = null;
+let pendingMediaType = null;
+
+/* ---- Media database (photos / videos / PDFs for reminiscence quizzes) ---- */
+const MEDIA_DB_NAME = 'mimi-to-kokoro-media';
+const MEDIA_STORE = 'items';
+let mediaDbPromise = null;
+
+function openMediaDB(){
+  if(mediaDbPromise) return mediaDbPromise;
+  mediaDbPromise = new Promise((resolve, reject)=>{
+    if(!window.indexedDB){ reject(new Error('no-indexeddb')); return; }
+    const req = indexedDB.open(MEDIA_DB_NAME, 1);
+    req.onupgradeneeded = ()=>{ req.result.createObjectStore(MEDIA_STORE, {keyPath:'id'}); };
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = ()=>reject(req.error);
+  });
+  return mediaDbPromise;
+}
+async function loadMediaItems(){
+  try{
+    const db = await openMediaDB();
+    mediaItems = await new Promise((resolve, reject)=>{
+      const tx = db.transaction(MEDIA_STORE, 'readonly');
+      const req = tx.objectStore(MEDIA_STORE).getAll();
+      req.onsuccess = ()=>resolve(req.result || []);
+      req.onerror = ()=>reject(req.error);
+    });
+    mediaItems.sort((a,b)=>a.createdAt-b.createdAt);
+  }catch(e){
+    mediaItems = [];
+  }
+  renderMediaList();
+}
+async function addMediaItemToDB(item){
+  const db = await openMediaDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(MEDIA_STORE, 'readwrite');
+    tx.objectStore(MEDIA_STORE).put(item);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+async function deleteMediaItemFromDB(id){
+  const db = await openMediaDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(MEDIA_STORE, 'readwrite');
+    tx.objectStore(MEDIA_STORE).delete(id);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+function onMediaFileChange(e){
+  const file = e.target.files[0];
+  const preview = document.getElementById('media-file-preview');
+  preview.innerHTML = '';
+  pendingMediaFile = null;
+  pendingMediaType = null;
+  if(!file) return;
+  if(file.type.startsWith('image/')) pendingMediaType = 'photo';
+  else if(file.type.startsWith('video/')) pendingMediaType = 'video';
+  else if(file.type === 'application/pdf') pendingMediaType = 'pdf';
+  else{
+    preview.innerHTML = '<p class="note">この形式のファイルは使えません（写真・動画・PDFのみ対応しています）。</p>';
+    return;
+  }
+  pendingMediaFile = file;
+  const url = URL.createObjectURL(file);
+  if(pendingMediaType==='photo'){
+    preview.innerHTML = `<img src="${url}" style="max-width:100%; border-radius:14px; margin-bottom:14px;">`;
+  }else if(pendingMediaType==='video'){
+    preview.innerHTML = `<video src="${url}" controls style="max-width:100%; border-radius:14px; margin-bottom:14px;"></video>`;
+  }else{
+    preview.innerHTML = `<p class="note" style="margin-bottom:14px;">📄 ${escapeHtml(file.name)}</p>`;
+  }
+}
+async function saveMediaItem(){
+  const noteEl = document.getElementById('media-save-note');
+  noteEl.style.display = 'block';
+  if(!pendingMediaFile || !pendingMediaType){
+    noteEl.textContent = '写真・動画・PDFのいずれかを選んでください。';
+    return;
+  }
+  const question = document.getElementById('media-question-input').value.trim() || 'この写真について、教えてください。';
+  const answer = document.getElementById('media-answer-input').value.trim();
+  const item = {
+    id: 'm'+Date.now()+Math.random().toString(36).slice(2),
+    type: pendingMediaType,
+    blob: pendingMediaFile,
+    question, answer,
+    createdAt: Date.now()
+  };
+  try{
+    await addMediaItemToDB(item);
+    document.getElementById('media-file-input').value = '';
+    document.getElementById('media-file-preview').innerHTML = '';
+    document.getElementById('media-question-input').value = '';
+    document.getElementById('media-answer-input').value = '';
+    pendingMediaFile = null;
+    pendingMediaType = null;
+    noteEl.textContent = '保存しました。';
+    await loadMediaItems();
+  }catch(e){
+    noteEl.textContent = '保存できませんでした。ファイルが大きすぎるか、この端末では使えない可能性があります。';
+  }
+}
+function renderMediaList(){
+  const list = document.getElementById('media-list');
+  const countEl = document.getElementById('media-count');
+  if(!list) return;
+  countEl.textContent = mediaItems.length;
+  if(mediaItems.length===0){
+    list.innerHTML = '<p class="note">まだ登録されていません。</p>';
+    return;
+  }
+  list.innerHTML = mediaItems.map(item=>{
+    const icon = item.type==='photo' ? '🖼️' : (item.type==='video' ? '🎬' : '📄');
+    return `<div class="settings-row">
+      <span>${icon} ${escapeHtml(item.question)}</span>
+      <button class="btn btn-outline" style="width:auto; margin:0; padding:10px 14px; font-size:calc(14px*var(--fs-scale));" onclick="removeMediaItem('${item.id}')">削除</button>
+    </div>`;
+  }).join('');
+}
+async function removeMediaItem(id){
+  if(!confirm('この項目を削除しますか？')) return;
+  await deleteMediaItemFromDB(id);
+  await loadMediaItems();
+}
 
 function loadState(){
   try{
@@ -621,13 +786,7 @@ function renderLessonStep(){
       </div>
       <button class="btn btn-primary" onclick="nextLessonStep()">言えました　→</button>`;
   }else if(lessonStep===1){
-    area.innerHTML = `
-      <div class="card">
-        <div class="eyebrow">思い出のお話</div>
-        <p class="prompt-text">${day.reminisce}</p>
-        <p class="hint-text">ご家族や、まわりの方にお話ししてみましょう。</p>
-      </div>
-      <button class="btn btn-primary" onclick="nextLessonStep()">お話しできました　→</button>`;
+    renderReminisceStep(day, area);
   }else if(lessonStep===2){
     renderWordStep(day.word, area);
   }else if(lessonStep===3){
@@ -643,6 +802,39 @@ function nextLessonStep(){
   }
 }
 
+function renderReminisceStep(day, area){
+  if(mediaItems.length > 0){
+    const item = mediaItems[state.completedDates.length % mediaItems.length];
+    const url = URL.createObjectURL(item.blob);
+    let mediaHtml;
+    if(item.type==='photo'){
+      mediaHtml = `<img src="${url}" style="max-width:100%; border-radius:16px; margin-bottom:16px;">`;
+    }else if(item.type==='video'){
+      mediaHtml = `<video src="${url}" controls style="max-width:100%; border-radius:16px; margin-bottom:16px;"></video>`;
+    }else{
+      mediaHtml = `<embed src="${url}" type="application/pdf" style="width:100%; height:280px; border-radius:16px; margin-bottom:10px; border:2px solid var(--card-line);">
+        <p class="hint-text" style="margin-bottom:16px;"><a href="${url}" target="_blank" rel="noopener">うまく表示されない場合は、ここをタップしてください</a></p>`;
+    }
+    area.innerHTML = `
+      <div class="card">
+        <div class="eyebrow">思い出のお話</div>
+        ${mediaHtml}
+        <p class="prompt-text">${escapeHtml(item.question)}</p>
+        <p class="hint-text">ご家族や、まわりの方にお話ししてみましょう。</p>
+        ${item.answer ? `<button class="btn btn-outline" style="margin-top:14px;" onclick="this.nextElementSibling.style.display='block'; this.style.display='none';">こたえを見る</button>
+        <p class="hint-text" style="display:none;">${escapeHtml(item.answer)}</p>` : ''}
+      </div>
+      <button class="btn btn-primary" style="margin-top:16px;" onclick="nextLessonStep()">お話しできました　→</button>`;
+  }else{
+    area.innerHTML = `
+      <div class="card">
+        <div class="eyebrow">思い出のお話</div>
+        <p class="prompt-text">${day.reminisce}</p>
+        <p class="hint-text">ご家族や、まわりの方にお話ししてみましょう。</p>
+      </div>
+      <button class="btn btn-primary" onclick="nextLessonStep()">お話しできました　→</button>`;
+  }
+}
 function renderWordStep(word, area){
   wordStepDone = false;
   let extra = '';
@@ -882,6 +1074,11 @@ function shuffle(arr){
 function escapeAttr(s){
   return String(s).replace(/'/g,"\\'");
 }
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
 
 /* ---- init ---- */
 document.documentElement.style.setProperty('--fs-scale', state.fontScale);
@@ -891,5 +1088,7 @@ document.documentElement.style.setProperty('--ear-scale', 1);
     b.classList.toggle('active', parseFloat(b.dataset.fs)===state.fontScale);
   });
 })();
+document.getElementById('media-file-input').addEventListener('change', onMediaFileChange);
+loadMediaItems();
 renderHome();
 </script>
