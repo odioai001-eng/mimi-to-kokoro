@@ -1,0 +1,814 @@
+<title>みみとこころ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=BIZ+UDPGothic:wght@400;700&display=swap">
+<style>
+  :root{
+    --paper:#FBF3E7;
+    --card:#FFFCF6;
+    --card-line:#E7D9C4;
+    --ink:#3A2E22;
+    --ink-soft:#6B5C4B;
+    --persimmon:#E2672B;
+    --persimmon-deep:#B44E1E;
+    --persimmon-tint:#FBE2D2;
+    --indigo:#4C6B8A;
+    --indigo-deep:#37516C;
+    --indigo-tint:#DCE7F0;
+    --moss:#6B8C4E;
+    --moss-tint:#E4EEDA;
+    --gold:#D9A441;
+    --shadow: 0 10px 28px rgba(58,46,34,0.10);
+    --radius: 22px;
+    --fs-scale: 1;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#211A14;
+      --card:#2B231A;
+      --card-line:#4A3C2C;
+      --ink:#F3E7D8;
+      --ink-soft:#CBB89F;
+      --persimmon:#F0813F;
+      --persimmon-deep:#F7A268;
+      --persimmon-tint:#3E2A1C;
+      --indigo:#89AAD0;
+      --indigo-deep:#AFC7E6;
+      --indigo-tint:#1F2C3C;
+      --moss:#9AC178;
+      --moss-tint:#26301E;
+      --gold:#E7BC66;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#211A14;
+    --card:#2B231A;
+    --card-line:#4A3C2C;
+    --ink:#F3E7D8;
+    --ink-soft:#CBB89F;
+    --persimmon:#F0813F;
+    --persimmon-deep:#F7A268;
+    --persimmon-tint:#3E2A1C;
+    --indigo:#89AAD0;
+    --indigo-deep:#AFC7E6;
+    --indigo-tint:#1F2C3C;
+    --moss:#9AC178;
+    --moss-tint:#26301E;
+    --gold:#E7BC66;
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:calc(20px * var(--fs-scale));
+    line-height:1.75;
+    -webkit-text-size-adjust:100%;
+  }
+  h1,h2,h3,.display{
+    font-family:"Zen Maru Gothic","BIZ UDPGothic",sans-serif;
+    font-weight:700;
+    text-wrap:balance;
+    margin:0;
+  }
+  button{font-family:inherit;}
+  :focus-visible{outline:4px solid var(--gold); outline-offset:3px; border-radius:8px;}
+
+  .app{max-width:640px; margin:0 auto; padding:20px 18px 64px; min-height:100vh;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; padding:6px 2px 22px;}
+  .brand{display:flex; align-items:baseline; gap:10px;}
+  .brand-mark{font-size:calc(26px * var(--fs-scale)); font-weight:900; font-family:"Zen Maru Gothic",sans-serif; color:var(--persimmon-deep);}
+  .brand-sub{font-size:calc(13px * var(--fs-scale)); color:var(--ink-soft); letter-spacing:.06em;}
+  .icon-btn{
+    width:52px; height:52px; border-radius:50%;
+    border:2px solid var(--card-line); background:var(--card);
+    font-size:22px; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; box-shadow:var(--shadow); color:var(--ink);
+  }
+
+  .view{display:none;}
+  .view.active{display:block; animation:riseIn .35s ease both;}
+  @keyframes riseIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  .greeting{font-size:calc(17px * var(--fs-scale)); color:var(--ink-soft); margin-bottom:4px;}
+  .today-date{font-size:calc(30px * var(--fs-scale)); margin-bottom:22px;}
+  .today-date b{color:var(--persimmon-deep);}
+
+  .pillar{
+    display:block; width:100%; text-align:left; border:none; cursor:pointer;
+    border-radius:var(--radius); padding:26px 24px; margin-bottom:18px;
+    box-shadow:var(--shadow); position:relative; overflow:hidden;
+  }
+  .pillar-lesson{background:linear-gradient(155deg, var(--persimmon-tint), var(--card) 70%); border:2px solid var(--persimmon-tint);}
+  .pillar-ear{background:linear-gradient(155deg, var(--indigo-tint), var(--card) 70%); border:2px solid var(--indigo-tint);}
+  .pillar-icon{font-size:38px; margin-bottom:10px; display:block;}
+  .pillar-title{font-size:calc(25px * var(--fs-scale)); margin-bottom:6px; color:var(--ink);}
+  .pillar-lesson .pillar-title{color:var(--persimmon-deep);}
+  .pillar-ear .pillar-title{color:var(--indigo-deep);}
+  .pillar-desc{font-size:calc(15px * var(--fs-scale)); color:var(--ink-soft);}
+  .pillar-badge{
+    position:absolute; top:22px; right:22px; background:var(--moss); color:#fff;
+    font-size:calc(13px * var(--fs-scale)); font-weight:700; padding:6px 12px; border-radius:999px;
+  }
+
+  .stamp-card{background:var(--card); border:2px solid var(--card-line); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);}
+  .stamp-card-title{font-size:calc(15px * var(--fs-scale)); color:var(--ink-soft); margin-bottom:12px; display:flex; justify-content:space-between; align-items:baseline;}
+  .streak-num{color:var(--persimmon-deep); font-weight:700; font-variant-numeric:tabular-nums;}
+  .stamp-row{display:flex; gap:10px; justify-content:space-between;}
+  .stamp{display:flex; flex-direction:column; align-items:center; gap:6px; flex:1;}
+  .stamp-dot{
+    width:38px; height:38px; border-radius:50%; border:2.5px solid var(--card-line);
+    display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--card-line);
+    background:var(--paper);
+  }
+  .stamp-dot.filled{background:var(--persimmon); border-color:var(--persimmon-deep); color:#fff;}
+  .stamp-dot.today{border-color:var(--gold); border-width:3px;}
+  .stamp-label{font-size:calc(11px * var(--fs-scale)); color:var(--ink-soft);}
+
+  .teaser{margin-top:16px; padding:16px 18px; background:var(--moss-tint); border-radius:16px; font-size:calc(15px * var(--fs-scale)); color:var(--ink);}
+  .teaser b{color:var(--moss);}
+
+  .header-row{display:flex; align-items:center; gap:14px; margin-bottom:22px;}
+  .back-btn{
+    width:52px; height:52px; min-width:52px; border-radius:50%; border:2px solid var(--card-line);
+    background:var(--card); font-size:24px; cursor:pointer; box-shadow:var(--shadow); color:var(--ink);
+  }
+  .header-title{font-size:calc(24px * var(--fs-scale));}
+
+  .card{background:var(--card); border:2px solid var(--card-line); border-radius:var(--radius); padding:28px 24px; box-shadow:var(--shadow); margin-bottom:20px;}
+  .eyebrow{font-size:calc(13px * var(--fs-scale)); letter-spacing:.08em; color:var(--persimmon-deep); font-weight:700; margin-bottom:10px;}
+  .eyebrow.indigo{color:var(--indigo-deep);}
+  .prompt-text{font-size:calc(24px * var(--fs-scale)); margin-bottom:6px;}
+  .hint-text{font-size:calc(15px * var(--fs-scale)); color:var(--ink-soft); margin-top:14px;}
+
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    width:100%; border:none; border-radius:18px; cursor:pointer;
+    font-size:calc(20px * var(--fs-scale)); font-weight:700; padding:22px 20px;
+    box-shadow:var(--shadow); margin-bottom:14px; color:#fff;
+    transition:transform .12s ease;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:var(--persimmon);}
+  .btn-primary:hover{background:var(--persimmon-deep);}
+  .btn-indigo{background:var(--indigo);}
+  .btn-indigo:hover{background:var(--indigo-deep);}
+  .btn-outline{background:var(--card); color:var(--ink); border:2px solid var(--card-line);}
+  .btn-ghost{background:transparent; color:var(--ink-soft); box-shadow:none; font-weight:400; font-size:calc(15px*var(--fs-scale)); padding:12px;}
+
+  .choice-list{display:flex; flex-direction:column; gap:12px; margin-top:18px;}
+  .choice{
+    text-align:left; padding:18px 20px; border-radius:16px; border:2px solid var(--card-line);
+    background:var(--paper); font-size:calc(19px * var(--fs-scale)); cursor:pointer; color:var(--ink);
+  }
+  .choice:hover{border-color:var(--persimmon);}
+  .choice.correct{background:var(--moss-tint); border-color:var(--moss); font-weight:700;}
+  .choice.wrong{background:var(--persimmon-tint); border-color:var(--persimmon); opacity:.75;}
+  .choice[disabled]{cursor:default;}
+
+  .feedback{margin-top:16px; padding:16px; border-radius:14px; font-size:calc(17px * var(--fs-scale));}
+  .feedback.good{background:var(--moss-tint); color:var(--ink);}
+  .feedback.soft{background:var(--persimmon-tint); color:var(--ink);}
+
+  .progress-dots{display:flex; gap:8px; margin-bottom:20px;}
+  .progress-dots span{flex:1; height:8px; border-radius:999px; background:var(--card-line);}
+  .progress-dots span.done{background:var(--persimmon);}
+
+  .memory-words{display:flex; flex-direction:column; gap:12px; margin:20px 0;}
+  .memory-word{background:var(--persimmon-tint); border-radius:14px; padding:16px; text-align:center; font-size:calc(26px * var(--fs-scale)); font-weight:700; color:var(--persimmon-deep);}
+
+  .stage{text-align:center; padding:20px 0;}
+  .stage-stamp{
+    width:120px; height:120px; border-radius:50%; background:var(--persimmon); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:52px; margin:10px auto 20px;
+    box-shadow:var(--shadow); animation:pop .5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes pop{from{transform:scale(0.4); opacity:0;} to{transform:scale(1); opacity:1;}}
+  .stage-title{font-size:calc(26px * var(--fs-scale)); margin-bottom:10px;}
+  .stage-sub{color:var(--ink-soft); font-size:calc(16px * var(--fs-scale)); margin-bottom:6px;}
+
+  textarea{
+    width:100%; min-height:100px; border-radius:14px; border:2px solid var(--card-line);
+    background:var(--paper); color:var(--ink); font-family:inherit; font-size:calc(18px*var(--fs-scale));
+    padding:14px; resize:vertical;
+  }
+
+  .ear-controls{display:flex; gap:12px; margin-bottom:16px;}
+  .fs-btn{
+    flex:1; padding:14px; border-radius:14px; border:2px solid var(--card-line); background:var(--card);
+    font-size:calc(16px*var(--fs-scale)); cursor:pointer; color:var(--ink);
+  }
+  .fs-btn.active{background:var(--indigo-tint); border-color:var(--indigo);}
+  .listen-btn{
+    width:100%; padding:26px; border-radius:20px; border:none; cursor:pointer; margin-bottom:18px;
+    font-size:calc(22px*var(--fs-scale)); font-weight:700; color:#fff; background:var(--indigo);
+    box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; gap:12px;
+  }
+  .listen-btn.on{background:var(--persimmon); animation:pulse 1.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(226,103,43,.35);} 50%{box-shadow:0 0 0 16px rgba(226,103,43,0);}}
+  .caption-box{
+    background:var(--card); border:2px solid var(--card-line); border-radius:var(--radius);
+    padding:22px; min-height:220px; max-height:52vh; overflow-y:auto; box-shadow:var(--shadow);
+  }
+  .caption-final{font-size:calc(26px*var(--ear-scale,1) * var(--fs-scale)); line-height:1.9; color:var(--ink);}
+  .caption-interim{font-size:calc(26px*var(--ear-scale,1) * var(--fs-scale)); color:var(--ink-soft);}
+  .caption-empty{color:var(--ink-soft); font-size:calc(17px*var(--fs-scale)); text-align:center; padding:40px 10px;}
+
+  .settings-row{display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--card-line);}
+  .settings-row:last-child{border-bottom:none;}
+  .note{font-size:calc(14px*var(--fs-scale)); color:var(--ink-soft); line-height:1.8;}
+</style>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-mark">みみとこころ</span>
+    </div>
+    <button class="icon-btn" onclick="go('settings')" aria-label="設定">⚙️</button>
+  </div>
+
+  <!-- HOME -->
+  <section id="view-home" class="view active">
+    <div class="greeting" id="home-greeting"></div>
+    <h1 class="today-date" id="home-date"></h1>
+
+    <button class="pillar pillar-ear" onclick="go('ear')">
+      <span class="pillar-badge" style="background:var(--indigo);">聞こえの手助け</span>
+      <span class="pillar-icon">👂</span>
+      <div class="pillar-title">みみサポート</div>
+      <div class="pillar-desc">相手の話を、大きな文字にして見せます。会話や診察の前に使ってみましょう。</div>
+    </button>
+
+    <button class="pillar pillar-lesson" onclick="startLesson()">
+      <span class="pillar-badge" id="lesson-badge">今日のぶん</span>
+      <span class="pillar-icon">☀️</span>
+      <div class="pillar-title" id="lesson-title-home">きょうのレッスン</div>
+      <div class="pillar-desc" id="lesson-desc-home">思い出のお話・ことば遊び・かんたん計算で、5分ほどです。</div>
+    </button>
+
+    <div class="stamp-card">
+      <div class="stamp-card-title">
+        <span>今週のスタンプ</span>
+        <span>つづけて <span class="streak-num" id="streak-num">0</span> 日</span>
+      </div>
+      <div class="stamp-row" id="stamp-row"></div>
+    </div>
+
+    <div class="teaser" id="home-teaser" style="display:none;"></div>
+  </section>
+
+  <!-- EAR SUPPORT -->
+  <section id="view-ear" class="view">
+    <div class="header-row">
+      <button class="back-btn" onclick="stopListening(); go('home')" aria-label="もどる">←</button>
+      <h2 class="header-title">みみサポート</h2>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow indigo">文字の大きさ</div>
+      <div class="ear-controls">
+        <button class="fs-btn" data-scale="0.8" onclick="setEarScale(0.8, this)">小</button>
+        <button class="fs-btn active" data-scale="1" onclick="setEarScale(1, this)">中</button>
+        <button class="fs-btn" data-scale="1.3" onclick="setEarScale(1.3, this)">大</button>
+        <button class="fs-btn" data-scale="1.7" onclick="setEarScale(1.7, this)">特大</button>
+      </div>
+    </div>
+
+    <button class="listen-btn" id="listen-btn" onclick="toggleListening()">
+      <span id="listen-icon">🎙️</span><span id="listen-label">はなしかけてもらう</span>
+    </button>
+
+    <div class="caption-box" id="caption-box">
+      <div class="caption-empty" id="caption-empty">ボタンを押すと、相手の話した内容を<br>ここに大きな文字で表示します。</div>
+    </div>
+
+    <button class="btn btn-ghost" onclick="clearCaptions()">文字を消す</button>
+    <p class="note" id="ear-support-note" style="display:none;"></p>
+  </section>
+
+  <!-- LESSON FLOW -->
+  <section id="view-lesson" class="view">
+    <div class="header-row">
+      <button class="back-btn" onclick="go('home')" aria-label="もどる">←</button>
+      <h2 class="header-title" id="lesson-theme-title">きょうのレッスン</h2>
+    </div>
+    <div class="progress-dots" id="progress-dots"></div>
+    <div id="lesson-step-area"></div>
+  </section>
+
+  <!-- STAMP / COMPLETE -->
+  <section id="view-complete" class="view">
+    <div class="stage">
+      <div class="stage-stamp">🎖️</div>
+      <div class="stage-title">よくできました！</div>
+      <div class="stage-sub">きょうのスタンプが増えました</div>
+    </div>
+    <div class="card">
+      <div class="eyebrow">きょうの一言（にしいてください・にしなくてもいいです）</div>
+      <p class="hint-text" style="margin-top:-6px; margin-bottom:12px;">今日感じたことを、少しだけ書いてみましょう。あとでご家族が読めます。</p>
+      <textarea id="note-input" placeholder="たとえば：むかしの遊びの話をしたら、楽しかった。"></textarea>
+      <button class="btn btn-outline" style="margin-top:12px;" onclick="voiceFillNote()">🎙️ 話して入力する</button>
+    </div>
+    <div class="teaser" id="complete-teaser"></div>
+    <button class="btn btn-primary" style="margin-top:20px;" onclick="finishComplete()">ホームへもどる</button>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="view-settings" class="view">
+    <div class="header-row">
+      <button class="back-btn" onclick="go('home')" aria-label="もどる">←</button>
+      <h2 class="header-title">設定</h2>
+    </div>
+    <div class="card">
+      <div class="eyebrow">文字の大きさ（アプリ全体）</div>
+      <div class="ear-controls">
+        <button class="fs-btn" data-fs="0.85" onclick="setGlobalScale(0.85, this)">小</button>
+        <button class="fs-btn active" data-fs="1" onclick="setGlobalScale(1, this)">中</button>
+        <button class="fs-btn" data-fs="1.2" onclick="setGlobalScale(1.2, this)">大</button>
+        <button class="fs-btn" data-fs="1.45" onclick="setGlobalScale(1.45, this)">特大</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="eyebrow">このアプリについて（ご家族の方へ）</div>
+      <p class="note">
+        「みみサポート」は端末のマイクで話し声を認識し、文字として表示する機能です。ブラウザ標準の音声認識を使うため、機種や環境によっては使えない場合があります（Google Chromeでの利用を推奨します）。<br><br>
+        「きょうのレッスン」は回想法・見当識訓練・言語課題・計算課題を組み合わせた、認知刺激を目的とした毎日の活動です。医療的な治療や診断の代わりになるものではありません。かかりつけ医の指示・治療と合わせて、日々の習慣としてご活用ください。<br><br>
+        記録は、この端末のブラウザ内にのみ保存されます。
+      </p>
+    </div>
+    <div class="card">
+      <div class="settings-row">
+        <span>記録をはじめからやり直す</span>
+        <button class="btn btn-outline" style="width:auto; margin:0; padding:12px 18px; font-size:calc(15px*var(--fs-scale));" onclick="resetProgress()">リセット</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const STORAGE_KEY = 'mimi-to-kokoro-v1';
+
+const CURRICULUM = [
+  {theme:"はじめまして", reminisce:"あなたのお名前には、どんな由来がありますか？ご家族から聞いた話があれば教えてください。",
+   word:{type:'category', prompt:"「あ」からはじまる たべものを、3つ言ってみましょう。", hint:"たとえば…あんぱん、あじ、あずき"},
+   brain:{type:'calc', a:3, b:4, op:'+'}},
+  {theme:"あそびの記憶", reminisce:"子どもの頃、いちばん好きだった遊びは何でしたか？誰と遊びましたか？",
+   word:{type:'oddOne', prompt:"仲間はずれは、どれでしょう？", choices:["りんご","みかん","ぶどう","えんぴつ"], answer:"えんぴつ"},
+   brain:{type:'memory', words:["とけい","さくら","てぶくろ"], foils:["くつした","かばん"]}},
+  {theme:"通学路", reminisce:"学校までは、どうやって通っていましたか？その道の景色を覚えていますか？",
+   word:{type:'proverb', prompt:"ことわざの続きは、どれでしょう？「猿も木から…」", choices:["落ちる","登る","笑う","逃げる"], answer:"落ちる"},
+   brain:{type:'calc', a:8, b:3, op:'-'}},
+  {theme:"季節の話", reminisce:"一番好きな季節はいつですか？その季節の、好きなところを教えてください。",
+   word:{type:'category', prompt:"「は」からはじまる 花の名前を、言えるだけ言ってみましょう。", hint:"たとえば…はす、はまなす"},
+   brain:{type:'calc', a:6, b:7, op:'+'}},
+  {theme:"はじめてのお給料", reminisce:"はじめてのお給料で、何を買いましたか？誰かにあげたものはありますか？",
+   word:{type:'shiritori', prompt:"しりとり：「すいか」の次に続くのは、どれでしょう？", choices:["かめ","りんご","めだか"], answer:"かめ"},
+   brain:{type:'memory', words:["ふうりん","ゆかた","すいか"], foils:["せんす","かきごおり"]}},
+  {theme:"うたの時間", reminisce:"小さい頃によく歌っていた歌、鼻歌を歌ってみましょう。どんな歌でしたか？",
+   word:{type:'oddOne', prompt:"仲間はずれは、どれでしょう？", choices:["ピアノ","たいこ","フルート","テーブル"], answer:"テーブル"},
+   brain:{type:'calc', a:9, b:5, op:'+'}},
+  {theme:"ごちそうの記憶", reminisce:"今までで一番おいしかった、思い出の食べ物は何ですか？",
+   word:{type:'proverb', prompt:"ことわざの続きは、どれでしょう？「石の上にも…」", choices:["三年","一年","十年","一日"], answer:"三年"},
+   brain:{type:'memory', words:["おにぎり","たまご","みそしる"], foils:["さかな","つけもの"]}},
+  {theme:"若かりし頃", reminisce:"若い頃、流行っていたことや、夢中になっていたことはありますか？",
+   word:{type:'category', prompt:"「き」からはじまる ことばを、3つ言ってみましょう。", hint:"たとえば…きもの、きしゃ、きのこ"},
+   brain:{type:'calc', a:12, b:5, op:'-'}},
+  {theme:"たからもの", reminisce:"今、大切にしているものはありますか？そこにはどんな思い出がありますか？",
+   word:{type:'shiritori', prompt:"しりとり：「たいこ」の次に続くのは、どれでしょう？", choices:["こま","いす","かさ"], answer:"こま"},
+   brain:{type:'memory', words:["とけい","めがね","ゆびわ"], foils:["くし","さいふ"]}},
+  {theme:"行ってみたい場所", reminisce:"もう一度行ってみたい場所、これから行ってみたい場所はありますか？",
+   word:{type:'oddOne', prompt:"仲間はずれは、どれでしょう？", choices:["バラ","ひまわり","さくら","とけい"], answer:"とけい"},
+   brain:{type:'calc', a:7, b:8, op:'+'}},
+  {theme:"思い出の記念日", reminisce:"結婚式や、記念日の思い出を教えてください。どんな一日でしたか？",
+   word:{type:'proverb', prompt:"ことわざの続きは、どれでしょう？「花より…」", choices:["団子","団体","花瓶","涙"], answer:"団子"},
+   brain:{type:'memory', words:["ゆびわ","はなたば","てがみ"], foils:["リボン","しゃしん"]}},
+  {theme:"子育ての喜び", reminisce:"子育てをしていて、一番嬉しかったことは何ですか？",
+   word:{type:'category', prompt:"「て」からはじまる ことばを、3つ言ってみましょう。", hint:"たとえば…てがみ、てぶくろ、てんき"},
+   brain:{type:'calc', a:15, b:6, op:'-'}},
+  {theme:"友との時間", reminisce:"仲の良かったお友達との、楽しい思い出はありますか？",
+   word:{type:'shiritori', prompt:"しりとり：「ねこ」の次に続くのは、どれでしょう？", choices:["こたつ","いぬ","さかな"], answer:"こたつ"},
+   brain:{type:'memory', words:["さんぽ","おちゃ","えがお"], foils:["おんがく","ひるね"]}},
+  {theme:"これからの夢", reminisce:"これから、やってみたいことはありますか？小さなことでも構いません。",
+   word:{type:'oddOne', prompt:"仲間はずれは、どれでしょう？", choices:["みかん","バナナ","いちご","ノート"], answer:"ノート"},
+   brain:{type:'calc', a:9, b:9, op:'+'}}
+];
+
+let state = loadState();
+let lessonStep = 0;
+let recognizer = null;
+let listening = false;
+let wordStepDone = false;
+let brainStepDone = false;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return Object.assign(defaultState(), JSON.parse(raw));
+  }catch(e){}
+  return defaultState();
+}
+function defaultState(){
+  return {fontScale:1, completedDates:[], notes:{}};
+}
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+function todayStr(d){
+  d = d || new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function dayIndexToday(){
+  return state.completedDates.length % CURRICULUM.length;
+}
+function doneToday(){
+  return state.completedDates.includes(todayStr());
+}
+
+function go(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  window.scrollTo(0,0);
+  if(view==='home') renderHome();
+}
+
+function renderHome(){
+  const h = new Date().getHours();
+  const g = h<10 ? 'おはようございます' : (h<17 ? 'こんにちは' : 'こんばんは');
+  document.getElementById('home-greeting').textContent = g;
+  const now = new Date();
+  const week = ['日','月','火','水','木','金','土'];
+  document.getElementById('home-date').innerHTML =
+    `<b>${now.getMonth()+1}月${now.getDate()}日</b>（${week[now.getDay()]}）`;
+
+  const idx = dayIndexToday();
+  const day = CURRICULUM[idx];
+  const badge = document.getElementById('lesson-badge');
+  const titleEl = document.getElementById('lesson-title-home');
+  const descEl = document.getElementById('lesson-desc-home');
+  if(doneToday()){
+    badge.textContent = '完了 ✓';
+    badge.style.background = 'var(--moss)';
+    titleEl.textContent = 'きょうのレッスン（もう一度）';
+    descEl.textContent = `今日のテーマ「${day.theme}」は完了しました。もう一度楽しむこともできます。`;
+  }else{
+    badge.textContent = `第${state.completedDates.length+1}回`;
+    badge.style.background = 'var(--persimmon-deep)';
+    titleEl.textContent = 'きょうのレッスン';
+    descEl.textContent = `今日のテーマは「${day.theme}」。5分ほどで終わります。`;
+  }
+
+  document.getElementById('streak-num').textContent = calcStreak();
+
+  const row = document.getElementById('stamp-row');
+  row.innerHTML = '';
+  const week2 = ['日','月','火','水','木','金','土'];
+  for(let i=6;i>=0;i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const key = todayStr(d);
+    const filled = state.completedDates.includes(key);
+    const isToday = i===0;
+    row.innerHTML += `<div class="stamp">
+      <div class="stamp-dot ${filled?'filled':''} ${isToday?'today':''}">${filled?'印':''}</div>
+      <div class="stamp-label">${week2[d.getDay()]}</div>
+    </div>`;
+  }
+
+  const teaser = document.getElementById('home-teaser');
+  if(doneToday()){
+    const nextDay = CURRICULUM[(idx+1)%CURRICULUM.length];
+    teaser.style.display='block';
+    teaser.innerHTML = `<b>あしたのお楽しみ：</b> 次は「${nextDay.theme}」のお話です。楽しみにしていてくださいね。`;
+  }else{
+    teaser.style.display='none';
+  }
+}
+
+function calcStreak(){
+  let streak = 0;
+  let d = new Date();
+  if(!state.completedDates.includes(todayStr(d))){
+    d.setDate(d.getDate()-1);
+  }
+  while(state.completedDates.includes(todayStr(d))){
+    streak++;
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+
+/* ---- Lesson flow ---- */
+function startLesson(){
+  lessonStep = 0;
+  go('lesson');
+  renderLessonStep();
+}
+function renderDots(){
+  const dots = document.getElementById('progress-dots');
+  dots.innerHTML='';
+  for(let i=0;i<4;i++){
+    dots.innerHTML += `<span class="${i<lessonStep? 'done':''}"></span>`;
+  }
+}
+function renderLessonStep(){
+  renderDots();
+  const idx = dayIndexToday();
+  const day = CURRICULUM[idx];
+  document.getElementById('lesson-theme-title').textContent = day.theme;
+  const area = document.getElementById('lesson-step-area');
+
+  if(lessonStep===0){
+    const now = new Date();
+    const week = ['日','月','火','水','木','金','土'];
+    area.innerHTML = `
+      <div class="card">
+        <div class="eyebrow">きょうは何の日</div>
+        <p class="prompt-text">今日の日付を、声に出して言ってみましょう。</p>
+        <p class="hint-text">今日は ${now.getMonth()+1}月${now.getDate()}日（${week[now.getDay()]}曜日）です。</p>
+      </div>
+      <button class="btn btn-primary" onclick="nextLessonStep()">言えました　→</button>`;
+  }else if(lessonStep===1){
+    area.innerHTML = `
+      <div class="card">
+        <div class="eyebrow">思い出のお話</div>
+        <p class="prompt-text">${day.reminisce}</p>
+        <p class="hint-text">ご家族や、まわりの方にお話ししてみましょう。</p>
+      </div>
+      <button class="btn btn-primary" onclick="nextLessonStep()">お話しできました　→</button>`;
+  }else if(lessonStep===2){
+    renderWordStep(day.word, area);
+  }else if(lessonStep===3){
+    renderBrainStep(day.brain, area);
+  }
+}
+function nextLessonStep(){
+  lessonStep++;
+  if(lessonStep>3){
+    completeLesson();
+  }else{
+    renderLessonStep();
+  }
+}
+
+function renderWordStep(word, area){
+  wordStepDone = false;
+  let extra = '';
+  if(word.type==='category'){
+    extra = `
+      <p class="prompt-text">${word.prompt}</p>
+      <button class="btn btn-outline" onclick="document.getElementById('word-hint').style.display='block'">ヒントを見る</button>
+      <p class="hint-text" id="word-hint" style="display:none;">${word.hint}</p>
+      <button class="btn btn-primary" style="margin-top:16px;" onclick="nextLessonStep()">言えました　→</button>`;
+    area.innerHTML = `<div class="card"><div class="eyebrow">ことば遊び</div>${extra}</div>`;
+  }else{
+    const choices = shuffle(word.choices.slice());
+    area.innerHTML = `<div class="card">
+      <div class="eyebrow">ことば遊び</div>
+      <p class="prompt-text">${word.prompt}</p>
+      <div class="choice-list" id="word-choices">
+        ${choices.map(c=>`<button class="choice" onclick="answerWord(this,'${escapeAttr(c)}','${escapeAttr(word.answer)}')">${c}</button>`).join('')}
+      </div>
+      <div id="word-feedback"></div>
+    </div>`;
+  }
+}
+function answerWord(btn, chosen, correct){
+  document.querySelectorAll('#word-choices .choice').forEach(b=>b.disabled=true);
+  const isCorrect = chosen===correct;
+  btn.classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect){
+    document.querySelectorAll('#word-choices .choice').forEach(b=>{
+      if(b.textContent.trim()===correct) b.classList.add('correct');
+    });
+  }
+  document.getElementById('word-feedback').innerHTML = `
+    <div class="feedback ${isCorrect?'good':'soft'}">
+      ${isCorrect? '正解です！すばらしい。' : `おしい！正解は「${correct}」でした。`}
+    </div>
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="nextLessonStep()">つぎへ　→</button>`;
+}
+
+function renderBrainStep(brain, area){
+  if(brain.type==='calc'){
+    const answer = brain.op==='+' ? brain.a+brain.b : brain.a-brain.b;
+    const distractors = new Set();
+    [1,-1,2,-2,3].forEach(o=>{ if(distractors.size<2 && answer+o>=0 && answer+o!==answer) distractors.add(answer+o); });
+    const choices = shuffle([answer, ...distractors]);
+    area.innerHTML = `<div class="card">
+      <div class="eyebrow">かんたん計算</div>
+      <p class="prompt-text" style="font-size:calc(30px*var(--fs-scale)); font-variant-numeric:tabular-nums;">${brain.a} ${brain.op} ${brain.b} = ？</p>
+      <div class="choice-list" id="brain-choices">
+        ${choices.map(c=>`<button class="choice" style="font-variant-numeric:tabular-nums;" onclick="answerBrain(this,${c},${answer})">${c}</button>`).join('')}
+      </div>
+      <div id="brain-feedback"></div>
+    </div>`;
+  }else{
+    area.innerHTML = `<div class="card" id="memory-phase-1">
+      <div class="eyebrow">きおくあそび</div>
+      <p class="prompt-text">3つのことばを覚えてください。</p>
+      <div class="memory-words">
+        ${brain.words.map(w=>`<div class="memory-word">${w}</div>`).join('')}
+      </div>
+      <button class="btn btn-primary" onclick="showMemoryQuestion()">おぼえました　→</button>
+    </div>`;
+    window.__memoryData = brain;
+  }
+}
+function showMemoryQuestion(){
+  const brain = window.__memoryData;
+  const target = brain.words[0];
+  const choices = shuffle([target, ...brain.foils]);
+  document.getElementById('lesson-step-area').innerHTML = `<div class="card">
+      <div class="eyebrow">きおくあそび</div>
+      <p class="prompt-text">さっき出てきたことばは、どれでしょう？</p>
+      <div class="choice-list" id="brain-choices">
+        ${choices.map(c=>`<button class="choice" onclick="answerBrain(this,'${escapeAttr(c)}','${escapeAttr(target)}')">${c}</button>`).join('')}
+      </div>
+      <div id="brain-feedback"></div>
+    </div>`;
+}
+function answerBrain(btn, chosen, correct){
+  document.querySelectorAll('#brain-choices .choice').forEach(b=>b.disabled=true);
+  const isCorrect = String(chosen)===String(correct);
+  btn.classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect){
+    document.querySelectorAll('#brain-choices .choice').forEach(b=>{
+      if(b.textContent.trim()===String(correct)) b.classList.add('correct');
+    });
+  }
+  document.getElementById('brain-feedback').innerHTML = `
+    <div class="feedback ${isCorrect?'good':'soft'}">
+      ${isCorrect? 'よくできました！' : `おしい！正解は「${correct}」でした。`}
+    </div>
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="nextLessonStep()">レッスンを終える　→</button>`;
+}
+
+function completeLesson(){
+  const key = todayStr();
+  if(!state.completedDates.includes(key)){
+    state.completedDates.push(key);
+    saveState();
+  }
+  const idx = (dayIndexToday()===0 ? CURRICULUM.length-1 : dayIndexToday()-1);
+  const nextDay = CURRICULUM[(dayIndexToday())%CURRICULUM.length];
+  document.getElementById('note-input').value = state.notes[key] || '';
+  document.getElementById('complete-teaser').innerHTML =
+    `<b>あしたのお楽しみ：</b> 次は「${nextDay.theme}」のお話です。楽しみにしていてくださいね。`;
+  go('complete');
+}
+function finishComplete(){
+  const key = todayStr();
+  const val = document.getElementById('note-input').value.trim();
+  if(val){ state.notes[key] = val; saveState(); }
+  go('home');
+}
+function voiceFillNote(){
+  const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!R){ alert('この端末では音声入力が使えません。文字を直接入力してください。'); return; }
+  const r = new R();
+  r.lang = 'ja-JP';
+  r.interimResults = false;
+  r.onresult = (e)=>{
+    const text = e.results[0][0].transcript;
+    const ta = document.getElementById('note-input');
+    ta.value = (ta.value ? ta.value+' ' : '') + text;
+  };
+  r.start();
+}
+
+/* ---- Ear support (live captions) ---- */
+function setEarScale(v, btn){
+  document.documentElement.style.setProperty('--ear-scale', v);
+  document.querySelectorAll('#view-ear .fs-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function toggleListening(){
+  if(listening){ stopListening(); return; }
+  const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const noteEl = document.getElementById('ear-support-note');
+  if(!R){
+    noteEl.style.display='block';
+    noteEl.textContent = 'この端末・ブラウザでは、この機能が使えないようです。Google Chromeで、この画面を新しいタブで開いてお試しください。';
+    return;
+  }
+  try{
+    recognizer = new R();
+    recognizer.lang = 'ja-JP';
+    recognizer.continuous = true;
+    recognizer.interimResults = true;
+    recognizer.onresult = onRecognitionResult;
+    recognizer.onerror = onRecognitionError;
+    recognizer.onend = ()=>{ if(listening){ try{recognizer.start();}catch(e){} } };
+    recognizer.start();
+    listening = true;
+    updateListenUI(true);
+    noteEl.style.display='none';
+  }catch(e){
+    noteEl.style.display='block';
+    noteEl.textContent = 'マイクを開始できませんでした。もう一度お試しください。';
+  }
+}
+function stopListening(){
+  listening = false;
+  if(recognizer){ try{ recognizer.onend=null; recognizer.stop(); }catch(e){} }
+  updateListenUI(false);
+}
+function updateListenUI(on){
+  const btn = document.getElementById('listen-btn');
+  btn.classList.toggle('on', on);
+  document.getElementById('listen-icon').textContent = on ? '⏹️' : '🎙️';
+  document.getElementById('listen-label').textContent = on ? 'きいています…（とめる）' : 'はなしかけてもらう';
+}
+function onRecognitionResult(e){
+  const box = document.getElementById('caption-box');
+  const empty = document.getElementById('caption-empty');
+  if(empty) empty.remove();
+  let finalText='', interimText='';
+  for(let i=e.resultIndex;i<e.results.length;i++){
+    const r = e.results[i];
+    if(r.isFinal) finalText += r[0].transcript;
+    else interimText += r[0].transcript;
+  }
+  let interimEl = document.getElementById('caption-interim');
+  if(finalText){
+    const p = document.createElement('p');
+    p.className='caption-final';
+    p.textContent = finalText;
+    box.appendChild(p);
+  }
+  if(!interimEl){
+    interimEl = document.createElement('p');
+    interimEl.id='caption-interim';
+    interimEl.className='caption-interim';
+    box.appendChild(interimEl);
+  }
+  interimEl.textContent = interimText;
+  box.scrollTop = box.scrollHeight;
+}
+function onRecognitionError(e){
+  const noteEl = document.getElementById('ear-support-note');
+  noteEl.style.display='block';
+  if(e.error==='not-allowed' || e.error==='service-not-allowed'){
+    noteEl.textContent = 'マイクの使用が許可されていません。ブラウザの設定でマイクを許可してください。';
+    stopListening();
+  }else if(e.error==='no-speech'){
+    noteEl.style.display='none';
+  }else if(e.error==='audio-capture'){
+    noteEl.textContent = 'マイクが見つかりません。端末のマイクをご確認ください。';
+    stopListening();
+  }
+}
+function clearCaptions(){
+  document.getElementById('caption-box').innerHTML = '<div class="caption-empty" id="caption-empty">ボタンを押すと、相手の話した内容を<br>ここに大きな文字で表示します。</div>';
+}
+
+/* ---- Settings ---- */
+function setGlobalScale(v, btn){
+  state.fontScale = v;
+  saveState();
+  document.documentElement.style.setProperty('--fs-scale', v);
+  document.querySelectorAll('#view-settings .fs-btn[data-fs]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function resetProgress(){
+  if(confirm('これまでの記録をすべて消去します。よろしいですか？')){
+    state = defaultState();
+    saveState();
+    go('home');
+  }
+}
+
+/* ---- utils ---- */
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+function escapeAttr(s){
+  return String(s).replace(/'/g,"\\'");
+}
+
+/* ---- init ---- */
+document.documentElement.style.setProperty('--fs-scale', state.fontScale);
+document.documentElement.style.setProperty('--ear-scale', 1);
+(function initSettingsUI(){
+  document.querySelectorAll('#view-settings .fs-btn[data-fs]').forEach(b=>{
+    b.classList.toggle('active', parseFloat(b.dataset.fs)===state.fontScale);
+  });
+})();
+renderHome();
+</script>
