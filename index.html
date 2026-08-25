@@ -186,6 +186,48 @@
   .memory-words{display:flex; flex-direction:column; gap:12px; margin:20px 0;}
   .memory-word{background:var(--persimmon-tint); border-radius:14px; padding:16px; text-align:center; font-size:calc(26px * var(--fs-scale)); font-weight:700; color:var(--persimmon-deep);}
 
+  .touch-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:20px 0;}
+  .touch-cell{
+    aspect-ratio:1; border-radius:16px; border:2px solid var(--card-line); background:var(--paper);
+    font-size:calc(30px * var(--fs-scale)); font-weight:700; color:var(--ink); cursor:pointer;
+    font-variant-numeric:tabular-nums; box-shadow:var(--shadow);
+  }
+  .touch-cell.touch-done{background:var(--moss-tint); border-color:var(--moss); color:var(--moss); opacity:.55;}
+  .touch-shake{animation:touchShake .3s;}
+  @keyframes touchShake{25%{transform:translateX(-6px);} 75%{transform:translateX(6px);}}
+
+  .sudoku-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:20px auto; max-width:280px;}
+  .sudoku-cell{
+    aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+    background:var(--paper); border:2px solid var(--card-line); border-radius:10px;
+    font-size:calc(22px * var(--fs-scale)); font-variant-numeric:tabular-nums; font-weight:700;
+  }
+  .sudoku-blank{background:var(--persimmon-tint); border-color:var(--persimmon); color:var(--persimmon-deep);}
+  .sudoku-col-sep{border-right:3px solid var(--ink-soft);}
+  .sudoku-row-sep{border-bottom:3px solid var(--ink-soft);}
+
+  .crossword-boxes{display:flex; gap:8px; justify-content:center; margin:20px 0 16px; flex-wrap:wrap;}
+  .crossword-box{
+    width:52px; height:52px; border:2px solid var(--card-line); border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:calc(24px * var(--fs-scale)); font-weight:700; background:var(--paper);
+  }
+  .crossword-box.filled{background:var(--indigo-tint); border-color:var(--indigo);}
+  .crossword-tiles{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:16px;}
+  .crossword-tile{
+    width:52px; height:52px; border-radius:10px; border:2px solid var(--card-line);
+    background:var(--card); font-size:calc(22px * var(--fs-scale)); font-weight:700;
+    cursor:pointer; color:var(--ink); box-shadow:var(--shadow);
+  }
+  .crossword-tile.used{opacity:.3; cursor:default; box-shadow:none;}
+
+  .spotdiff-panels{display:flex; flex-direction:column; gap:14px; margin:20px 0;}
+  .spotdiff-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    background:var(--paper); border:2px solid var(--card-line); border-radius:16px; padding:14px;
+  }
+  .spotdiff-cell{aspect-ratio:1; font-size:calc(34px * var(--fs-scale)); border:none; background:var(--card); border-radius:12px; cursor:pointer; box-shadow:var(--shadow);}
+
   .stage{text-align:center; padding:20px 0;}
   .stage-stamp{
     width:120px; height:120px; border-radius:50%; background:var(--persimmon); color:#fff;
@@ -439,7 +481,7 @@ const CURRICULUM = [
    brain:{type:'calc', a:8, b:3, op:'-'}},
   {theme:"季節の話", reminisce:"一番好きな季節はいつですか？その季節の、好きなところを教えてください。",
    word:{type:'category', prompt:"「は」からはじまる 花の名前を、言えるだけ言ってみましょう。", hint:"たとえば…はす、はまなす"},
-   brain:{type:'calc', a:6, b:7, op:'+'}},
+   brain:{type:'touchNumber'}},
   {theme:"はじめてのお給料", reminisce:"はじめてのお給料で、何を買いましたか？誰かにあげたものはありますか？",
    word:{type:'shiritori', prompt:"しりとり：「すいか」の次に続くのは、どれでしょう？", choices:["かめ","りんご","めだか"], answer:"かめ"},
    brain:{type:'memory', words:["ふうりん","ゆかた","すいか"], foils:["せんす","かきごおり"]}},
@@ -448,7 +490,7 @@ const CURRICULUM = [
    brain:{type:'calc', a:9, b:5, op:'+'}},
   {theme:"ごちそうの記憶", reminisce:"今までで一番おいしかった、思い出の食べ物は何ですか？",
    word:{type:'proverb', prompt:"ことわざの続きは、どれでしょう？「石の上にも…」", choices:["三年","一年","十年","一日"], answer:"三年"},
-   brain:{type:'memory', words:["おにぎり","たまご","みそしる"], foils:["さかな","つけもの"]}},
+   brain:{type:'touchNumber'}},
   {theme:"若かりし頃", reminisce:"若い頃、流行っていたことや、夢中になっていたことはありますか？",
    word:{type:'category', prompt:"「き」からはじまる ことばを、3つ言ってみましょう。", hint:"たとえば…きもの、きしゃ、きのこ"},
    brain:{type:'calc', a:12, b:5, op:'-'}},
@@ -457,7 +499,7 @@ const CURRICULUM = [
    brain:{type:'memory', words:["とけい","めがね","ゆびわ"], foils:["くし","さいふ"]}},
   {theme:"行ってみたい場所", reminisce:"もう一度行ってみたい場所、これから行ってみたい場所はありますか？",
    word:{type:'oddOne', prompt:"仲間はずれは、どれでしょう？", choices:["バラ","ひまわり","さくら","とけい"], answer:"とけい"},
-   brain:{type:'calc', a:7, b:8, op:'+'}},
+   brain:{type:'sudoku'}},
   {theme:"思い出の記念日", reminisce:"結婚式や、記念日の思い出を教えてください。どんな一日でしたか？",
    word:{type:'proverb', prompt:"ことわざの続きは、どれでしょう？「花より…」", choices:["団子","団体","花瓶","涙"], answer:"団子"},
    brain:{type:'memory', words:["ゆびわ","はなたば","てがみ"], foils:["リボン","しゃしん"]}},
@@ -466,7 +508,7 @@ const CURRICULUM = [
    brain:{type:'calc', a:15, b:6, op:'-'}},
   {theme:"友との時間", reminisce:"仲の良かったお友達との、楽しい思い出はありますか？",
    word:{type:'shiritori', prompt:"しりとり：「ねこ」の次に続くのは、どれでしょう？", choices:["こたつ","いぬ","さかな"], answer:"こたつ"},
-   brain:{type:'memory', words:["さんぽ","おちゃ","えがお"], foils:["おんがく","ひるね"]}},
+   brain:{type:'sudoku'}},
   {theme:"これからの夢", reminisce:"これから、やってみたいことはありますか？小さなことでも構いません。",
    word:{type:'oddOne', prompt:"仲間はずれは、どれでしょう？", choices:["みかん","バナナ","いちご","ノート"], answer:"ノート"},
    brain:{type:'calc', a:9, b:9, op:'+'}},
@@ -481,7 +523,7 @@ const CURRICULUM = [
    brain:{type:'calc', a:11, b:4, op:'-'}},
   {theme:"好きな匂い", reminisce:"懐かしい匂い、好きな香りはありますか？どんな時に感じましたか？",
    word:{type:'category', prompt:"「み」からはじまる たべものを、3つ言ってみましょう。", hint:"たとえば…みかん、みそ、みずあめ"},
-   brain:{type:'memory', words:["せっけん","おちゃ","はな"], foils:["けむり","あめ"]}},
+   brain:{type:'crossword'}},
   {theme:"動物の思い出", reminisce:"飼っていた動物や、好きだった動物はいますか？",
    word:{type:'shiritori', prompt:"しりとり：「いぬ」の次に続くのは、どれでしょう？", choices:["ぬいぐるみ","ねこ","とり"], answer:"ぬいぐるみ"},
    brain:{type:'calc', a:13, b:7, op:'-'}},
@@ -490,7 +532,7 @@ const CURRICULUM = [
    brain:{type:'memory', words:["しゃしん","アルバム","えがお"], foils:["てがみ","はなたば"]}},
   {theme:"手作りの味", reminisce:"自分で作った料理やお菓子で、思い出に残っているものはありますか？",
    word:{type:'proverb', prompt:"ことわざの続きは、どれでしょう？「井の中の蛙…」", choices:["大海を知らず","水を得た魚","猿も木から落ちる","塵も積もれば山となる"], answer:"大海を知らず"},
-   brain:{type:'calc', a:6, b:9, op:'+'}},
+   brain:{type:'crossword'}},
   {theme:"旅の思い出", reminisce:"今まで行った旅行で、一番心に残っているのはどこですか？",
    word:{type:'category', prompt:"「た」からはじまる ことばを、3つ言ってみましょう。", hint:"たとえば…たいこ、たまご、たんぽぽ"},
    brain:{type:'memory', words:["ちず","きっぷ","カメラ"], foils:["ぼうし","かさ"]}},
@@ -502,7 +544,7 @@ const CURRICULUM = [
    brain:{type:'memory', words:["トロフィー","しょうじょう","はくしゅ"], foils:["てがみ","くつ"]}},
   {theme:"好きな景色", reminisce:"山、海、田んぼ…好きな景色はどんな場所ですか？",
    word:{type:'category', prompt:"「や」からはじまる ことばを、3つ言ってみましょう。", hint:"たとえば…やま、やさい、やかん"},
-   brain:{type:'calc', a:8, b:8, op:'+'}},
+   brain:{type:'spotDiff'}},
   {theme:"笑った思い出", reminisce:"思い出すと笑ってしまう、楽しい出来事はありますか？",
    word:{type:'proverb', prompt:"ことわざの続きは、どれでしょう？「笑う門には…」", choices:["福来る","鬼来る","雨来る","風来る"], answer:"福来る"},
    brain:{type:'memory', words:["わらいごえ","えがお","ひなた"], foils:["なみだ","くも"]}},
@@ -511,7 +553,7 @@ const CURRICULUM = [
    brain:{type:'calc', a:10, b:6, op:'+'}},
   {theme:"これまでのあゆみ", reminisce:"ここまでの人生を振り返って、一番の宝物は何ですか？",
    word:{type:'oddOne', prompt:"仲間はずれは、どれでしょう？", choices:["さくら","もみじ","ひまわり","くつした"], answer:"くつした"},
-   brain:{type:'memory', words:["ほん","にっき","まんねんひつ"], foils:["さいふ","めがね"]}}
+   brain:{type:'spotDiff'}}
 ];
 
 let state = loadState();
@@ -969,7 +1011,7 @@ function renderBrainStep(brain, area){
       </div>
       <div id="brain-feedback"></div>
     </div>`;
-  }else{
+  }else if(brain.type==='memory'){
     area.innerHTML = `<div class="card" id="memory-phase-1">
       <div class="eyebrow">きおくあそび</div>
       <p class="prompt-text">3つのことばを覚えてください。</p>
@@ -979,6 +1021,14 @@ function renderBrainStep(brain, area){
       <button class="btn btn-primary" onclick="showMemoryQuestion()">おぼえました　→</button>
     </div>`;
     window.__memoryData = brain;
+  }else if(brain.type==='touchNumber'){
+    renderTouchNumberStep(area);
+  }else if(brain.type==='sudoku'){
+    renderSudokuStep(area);
+  }else if(brain.type==='crossword'){
+    renderCrosswordStep(area);
+  }else if(brain.type==='spotDiff'){
+    renderSpotDiffStep(area);
   }
 }
 function showMemoryQuestion(){
@@ -1008,6 +1058,154 @@ function answerBrain(btn, chosen, correct){
       ${isCorrect? 'よくできました！' : `おしい！正解は「${correct}」でした。`}
     </div>
     <button class="btn btn-primary" style="margin-top:16px;" onclick="nextLessonStep()">レッスンを終える　→</button>`;
+}
+
+function renderTouchNumberStep(area){
+  const nums = shuffle(Array.from({length:9}, (_,i)=>i+1));
+  window.__touchNext = 1;
+  area.innerHTML = `<div class="card">
+    <div class="eyebrow">タッチザナンバー</div>
+    <p class="prompt-text">1から順番に、すう字をタッチしましょう。</p>
+    <div class="touch-grid" id="touch-grid">
+      ${nums.map(n=>`<button class="touch-cell" onclick="touchNumberTap(this, ${n})">${n}</button>`).join('')}
+    </div>
+    <div id="touch-feedback"></div>
+  </div>`;
+}
+function touchNumberTap(btn, n){
+  if(btn.disabled) return;
+  if(n === window.__touchNext){
+    btn.disabled = true;
+    btn.classList.add('touch-done');
+    window.__touchNext++;
+    const total = document.querySelectorAll('.touch-cell').length;
+    if(window.__touchNext > total){
+      document.getElementById('touch-feedback').innerHTML = `
+        <div class="feedback good">よくできました！ぜんぶタッチできましたね。</div>
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="nextLessonStep()">レッスンを終える　→</button>`;
+    }
+  }else{
+    btn.classList.add('touch-shake');
+    setTimeout(()=>btn.classList.remove('touch-shake'), 300);
+  }
+}
+
+function generateSudoku4(){
+  const base = [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]];
+  const perm = shuffle([1,2,3,4]);
+  let grid = base.map(row=>row.map(v=>perm[v-1]));
+  if(Math.random()<0.5){ grid = grid[0].map((_,c)=>grid.map(row=>row[c])); }
+  const r = Math.floor(Math.random()*4), c = Math.floor(Math.random()*4);
+  return {grid, r, c, answer:grid[r][c]};
+}
+function renderSudokuStep(area){
+  const {grid, r, c, answer} = generateSudoku4();
+  const cellsHtml = grid.map((row,ri)=>row.map((v,ci)=>{
+    const isBlank = (ri===r && ci===c);
+    const cls = ['sudoku-cell'];
+    if(isBlank) cls.push('sudoku-blank');
+    if(ci===1) cls.push('sudoku-col-sep');
+    if(ri===1) cls.push('sudoku-row-sep');
+    return `<div class="${cls.join(' ')}">${isBlank?'？':v}</div>`;
+  }).join('')).join('');
+  const choices = shuffle([1,2,3,4]);
+  area.innerHTML = `<div class="card">
+    <div class="eyebrow">かんたん数独</div>
+    <p class="prompt-text">？に入る数字は、どれでしょう？</p>
+    <div class="sudoku-grid">${cellsHtml}</div>
+    <div class="choice-list" id="brain-choices">
+      ${choices.map(v=>`<button class="choice" style="font-variant-numeric:tabular-nums;" onclick="answerBrain(this,${v},${answer})">${v}</button>`).join('')}
+    </div>
+    <div id="brain-feedback"></div>
+  </div>`;
+}
+
+const CROSSWORD_POOL = [
+  {clue:"あめの日にさす、どうぐ", word:"かさ"},
+  {clue:"よるの空にうかぶ、まるいもの", word:"つき"},
+  {clue:"はるにさく、ピンクいろの花", word:"さくら"},
+  {clue:"じかんを おしえてくれる どうぐ", word:"とけい"},
+  {clue:"目が わるいときに かける もの", word:"めがね"},
+  {clue:"くうきを いれて とばす、まるいもの", word:"ふうせん"},
+  {clue:"とおくの人と はなせる どうぐ", word:"でんわ"},
+  {clue:"あたたかい のみもの、みどりいろ", word:"おちゃ"}
+];
+function renderCrosswordStep(area){
+  const item = CROSSWORD_POOL[state.completedDates.length % CROSSWORD_POOL.length];
+  const letters = shuffle(item.word.split(''));
+  window.__crosswordAnswer = item.word;
+  window.__crosswordPlaced = [];
+  area.innerHTML = `<div class="card">
+    <div class="eyebrow">ことばパズル</div>
+    <p class="prompt-text">${escapeHtml(item.clue)}</p>
+    <div class="crossword-boxes" id="crossword-boxes">
+      ${item.word.split('').map((_,i)=>`<div class="crossword-box" id="cw-box-${i}"></div>`).join('')}
+    </div>
+    <div class="crossword-tiles" id="crossword-tiles">
+      ${letters.map((ch,i)=>`<button class="crossword-tile" id="cw-tile-${i}" onclick="crosswordTap(${i}, '${escapeAttr(ch)}')">${ch}</button>`).join('')}
+    </div>
+    <button class="btn btn-ghost" onclick="crosswordClear()">やりなおす</button>
+    <div id="crossword-feedback"></div>
+  </div>`;
+}
+function crosswordTap(tileIdx, ch){
+  const tileBtn = document.getElementById('cw-tile-'+tileIdx);
+  if(tileBtn.disabled) return;
+  const boxIdx = window.__crosswordPlaced.length;
+  const boxEl = document.getElementById('cw-box-'+boxIdx);
+  if(!boxEl) return;
+  boxEl.textContent = ch;
+  boxEl.classList.add('filled');
+  tileBtn.disabled = true;
+  tileBtn.classList.add('used');
+  window.__crosswordPlaced.push(ch);
+  if(window.__crosswordPlaced.length === window.__crosswordAnswer.length){
+    const assembled = window.__crosswordPlaced.join('');
+    const correct = assembled === window.__crosswordAnswer;
+    document.getElementById('crossword-feedback').innerHTML = `
+      <div class="feedback ${correct?'good':'soft'}">${correct? 'せいかいです！すばらしい。' : `おしい！正解は「${escapeHtml(window.__crosswordAnswer)}」でした。`}</div>
+      <button class="btn btn-primary" style="margin-top:16px;" onclick="nextLessonStep()">レッスンを終える　→</button>`;
+  }
+}
+function crosswordClear(){
+  window.__crosswordPlaced = [];
+  document.querySelectorAll('#crossword-boxes .crossword-box').forEach(b=>{ b.textContent=''; b.classList.remove('filled'); });
+  document.querySelectorAll('#crossword-tiles .crossword-tile').forEach(b=>{ b.disabled=false; b.classList.remove('used'); });
+  document.getElementById('crossword-feedback').innerHTML = '';
+}
+
+const SPOTDIFF_EMOJI = ['🍎','🍊','🍇','🍌','🍓','🍑','🍒','🥝','🍋','🍉'];
+function renderSpotDiffStep(area){
+  const gridSize = 6;
+  const base = shuffle(SPOTDIFF_EMOJI.slice()).slice(0, gridSize);
+  const diffIndex = Math.floor(Math.random()*gridSize);
+  const remaining = SPOTDIFF_EMOJI.filter(e=>!base.includes(e));
+  const replacement = remaining[Math.floor(Math.random()*remaining.length)];
+  const modified = base.slice();
+  modified[diffIndex] = replacement;
+  window.__spotDiffFound = false;
+  window.__spotDiffIndex = diffIndex;
+  area.innerHTML = `<div class="card">
+    <div class="eyebrow">まちがいさがし</div>
+    <p class="prompt-text">2つの絵を見くらべて、ちがう1つを見つけてタップしましょう。</p>
+    <div class="spotdiff-panels">
+      <div class="spotdiff-grid">${base.map((e,i)=>`<button class="spotdiff-cell" onclick="spotDiffTap(${i})">${e}</button>`).join('')}</div>
+      <div class="spotdiff-grid">${modified.map((e,i)=>`<button class="spotdiff-cell" onclick="spotDiffTap(${i})">${e}</button>`).join('')}</div>
+    </div>
+    <div id="spotdiff-feedback"></div>
+  </div>`;
+}
+function spotDiffTap(i){
+  if(window.__spotDiffFound) return;
+  const fb = document.getElementById('spotdiff-feedback');
+  if(i === window.__spotDiffIndex){
+    window.__spotDiffFound = true;
+    fb.innerHTML = `
+      <div class="feedback good">見つけました！よくできました。</div>
+      <button class="btn btn-primary" style="margin-top:16px;" onclick="nextLessonStep()">レッスンを終える　→</button>`;
+  }else{
+    fb.innerHTML = `<div class="feedback soft">ちがいました。もう一度、探してみましょう。</div>`;
+  }
 }
 
 function completeLesson(){
