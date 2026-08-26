@@ -1259,6 +1259,23 @@ function setEarScale(v, btn){
   document.querySelectorAll('#view-ear .fs-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
+let lastFinalText = '';
+function createRecognizer(){
+  const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const r = new R();
+  r.lang = 'ja-JP';
+  r.continuous = true;
+  r.interimResults = true;
+  r.onresult = onRecognitionResult;
+  r.onerror = onRecognitionError;
+  r.onend = ()=>{
+    if(listening){
+      recognizer = createRecognizer();
+      try{ recognizer.start(); }catch(e){}
+    }
+  };
+  return r;
+}
 function toggleListening(){
   if(listening){ stopListening(); return; }
   const R = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1269,13 +1286,8 @@ function toggleListening(){
     return;
   }
   try{
-    recognizer = new R();
-    recognizer.lang = 'ja-JP';
-    recognizer.continuous = true;
-    recognizer.interimResults = true;
-    recognizer.onresult = onRecognitionResult;
-    recognizer.onerror = onRecognitionError;
-    recognizer.onend = ()=>{ if(listening){ try{recognizer.start();}catch(e){} } };
+    lastFinalText = '';
+    recognizer = createRecognizer();
     recognizer.start();
     listening = true;
     updateListenUI(true);
@@ -1307,11 +1319,13 @@ function onRecognitionResult(e){
     else interimText += r[0].transcript;
   }
   let interimEl = document.getElementById('caption-interim');
-  if(finalText){
+  if(finalText && finalText !== lastFinalText){
     const p = document.createElement('p');
     p.className='caption-final';
     p.textContent = finalText;
     box.appendChild(p);
+    lastFinalText = finalText;
+    if(interimEl) box.appendChild(interimEl);
   }
   if(!interimEl){
     interimEl = document.createElement('p');
@@ -1337,6 +1351,7 @@ function onRecognitionError(e){
 }
 function clearCaptions(){
   document.getElementById('caption-box').innerHTML = '<div class="caption-empty" id="caption-empty">ボタンを押すと、相手の話した内容を<br>ここに大きな文字で表示します。</div>';
+  lastFinalText = '';
 }
 
 /* ---- Settings ---- */
