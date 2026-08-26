@@ -374,6 +374,12 @@
       <h2 class="header-title">設定</h2>
     </div>
     <div class="card">
+      <div class="eyebrow">お名前（あいさつに使われます）</div>
+      <textarea id="username-input" style="min-height:auto; height:60px;" placeholder="例：和子さん"></textarea>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="saveUserName()">保存する</button>
+      <p class="note" id="username-note" style="display:none; margin-top:8px;"></p>
+    </div>
+    <div class="card">
       <div class="eyebrow">文字の大きさ（アプリ全体）</div>
       <div class="ear-controls">
         <button class="fs-btn" data-fs="0.85" onclick="setGlobalScale(0.85, this)">小</button>
@@ -772,7 +778,7 @@ function loadState(){
   return defaultState();
 }
 function defaultState(){
-  return {fontScale:1, completedDates:[], notes:{}};
+  return {fontScale:1, completedDates:[], notes:{}, userName:'和子さん'};
 }
 function saveState(){
   try{
@@ -795,6 +801,7 @@ function go(view){
   document.getElementById('view-'+view).classList.add('active');
   window.scrollTo(0,0);
   if(view==='home') renderHome();
+  if(view==='settings') document.getElementById('username-input').value = state.userName || '';
   const showFab = (view==='lesson' || view==='complete');
   document.getElementById('ear-fab').classList.toggle('hidden', !showFab);
   if(!showFab) closeEarOverlay();
@@ -816,7 +823,8 @@ function closeEarOverlay(){
 function renderHome(){
   const h = new Date().getHours();
   const g = h<10 ? 'おはようございます' : (h<17 ? 'こんにちは' : 'こんばんは');
-  document.getElementById('home-greeting').textContent = g;
+  const namePrefix = state.userName ? state.userName+'、' : '';
+  document.getElementById('home-greeting').textContent = namePrefix + g;
   const now = new Date();
   const week = ['日','月','火','水','木','金','土'];
   document.getElementById('home-date').innerHTML =
@@ -1338,6 +1346,14 @@ function setGlobalScale(v, btn){
   document.documentElement.style.setProperty('--fs-scale', v);
   document.querySelectorAll('#view-settings .fs-btn[data-fs]').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+}
+function saveUserName(){
+  const val = document.getElementById('username-input').value.trim();
+  state.userName = val;
+  saveState();
+  const noteEl = document.getElementById('username-note');
+  noteEl.style.display = 'block';
+  noteEl.textContent = '保存しました。';
 }
 function resetProgress(){
   if(confirm('これまでの記録をすべて消去します。よろしいですか？')){
