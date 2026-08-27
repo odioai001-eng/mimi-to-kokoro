@@ -16,6 +16,9 @@
     --indigo-tint:#DCE7F0;
     --moss:#6B8C4E;
     --moss-tint:#E4EEDA;
+    --plum:#8B5B7E;
+    --plum-deep:#6E4364;
+    --plum-tint:#EDE0EA;
     --gold:#D9A441;
     --shadow: 0 10px 28px rgba(58,46,34,0.10);
     --radius: 22px;
@@ -37,6 +40,9 @@
       --indigo-tint:#1F2C3C;
       --moss:#9AC178;
       --moss-tint:#26301E;
+      --plum:#C79BC0;
+      --plum-deep:#DDB8D6;
+      --plum-tint:#332A31;
       --gold:#E7BC66;
       color-scheme: dark;
     }
@@ -55,6 +61,9 @@
     --indigo-tint:#1F2C3C;
     --moss:#9AC178;
     --moss-tint:#26301E;
+    --plum:#C79BC0;
+    --plum-deep:#DDB8D6;
+    --plum-tint:#332A31;
     --gold:#E7BC66;
     color-scheme: dark;
   }
@@ -110,10 +119,12 @@
   }
   .pillar-lesson{background:linear-gradient(155deg, var(--persimmon-tint), var(--card) 70%); border:2px solid var(--persimmon-tint);}
   .pillar-ear{background:linear-gradient(155deg, var(--indigo-tint), var(--card) 70%); border:2px solid var(--indigo-tint);}
+  .pillar-video{background:linear-gradient(155deg, var(--plum-tint), var(--card) 70%); border:2px solid var(--plum-tint);}
   .pillar-icon{font-size:38px; margin-bottom:10px; display:block;}
   .pillar-title{font-size:calc(25px * var(--fs-scale)); margin-bottom:6px; color:var(--ink);}
   .pillar-lesson .pillar-title{color:var(--persimmon-deep);}
   .pillar-ear .pillar-title{color:var(--indigo-deep);}
+  .pillar-video .pillar-title{color:var(--plum-deep);}
   .pillar-desc{font-size:calc(15px * var(--fs-scale)); color:var(--ink-soft);}
   .pillar-badge{
     position:absolute; top:22px; right:22px; background:var(--moss); color:#fff;
@@ -299,6 +310,44 @@
     width:100%; padding:12px; border-radius:14px; border:2px dashed var(--card-line);
     background:var(--paper); color:var(--ink-soft); font-size:calc(14px*var(--fs-scale)); margin-bottom:14px;
   }
+
+  .fullscreen-overlay{
+    position:fixed; inset:0; z-index:60; display:none;
+    background:#1B1712; color:#F3E7D8;
+    flex-direction:column; align-items:center; justify-content:center;
+    padding:24px;
+  }
+  .fullscreen-overlay.open{display:flex;}
+
+  .incoming-call-box{text-align:center;}
+  .incoming-ring-icon{font-size:64px; margin-bottom:20px; animation:ringPulse 1s ease-in-out infinite;}
+  @keyframes ringPulse{0%,100%{transform:scale(1);} 50%{transform:scale(1.15);}}
+  .incoming-caller-label{font-size:calc(22px*var(--fs-scale)); margin-bottom:36px; font-family:"Zen Maru Gothic",sans-serif; font-weight:700;}
+  .incoming-call-buttons{display:flex; gap:32px; justify-content:center;}
+  .call-round-btn{
+    width:96px; height:96px; border-radius:50%; border:none; cursor:pointer;
+    font-size:32px; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  }
+  .call-round-btn span{font-size:calc(13px*var(--fs-scale)); font-family:"BIZ UDPGothic",sans-serif;}
+  .call-btn-decline{background:#C43D3D;}
+  .call-btn-accept{background:#4E9D5C;}
+
+  .call-video-area{position:relative; width:100%; max-width:640px; flex:1; display:flex; align-items:center; justify-content:center;}
+  #vc-remote-video{width:100%; max-height:70vh; border-radius:20px; background:#000; object-fit:cover;}
+  #vc-local-video{
+    position:absolute; bottom:14px; right:14px; width:96px; height:128px; border-radius:14px;
+    object-fit:cover; border:2px solid rgba(255,255,255,0.5); transform:scaleX(-1); background:#000;
+  }
+  .call-status-text{position:absolute; top:14px; left:0; right:0; text-align:center; font-size:calc(16px*var(--fs-scale)); color:#F3E7D8; text-shadow:0 1px 4px rgba(0,0,0,0.5);}
+  .call-controls{display:flex; gap:24px; margin-top:24px;}
+  .vc-control-btn{
+    width:68px; height:68px; border-radius:50%; border:none; cursor:pointer; font-size:26px;
+    background:rgba(255,255,255,0.15); color:#fff;
+  }
+  .vc-control-btn.vc-control-off{background:rgba(255,255,255,0.35); color:#C43D3D;}
+  .vc-hangup{background:#C43D3D; width:80px; height:80px; font-size:30px;}
+  #call-screen-overlay .call-cancel-btn{margin-top:24px; background:rgba(255,255,255,0.1); color:#F3E7D8; border-color:rgba(255,255,255,0.3);}
 </style>
 
 <div class="app">
@@ -322,6 +371,13 @@
       <div class="pillar-desc">相手の話を、大きな文字にして見せます。会話や診察の前に使ってみましょう。</div>
     </button>
 
+    <button class="pillar pillar-video" onclick="go('videocall')">
+      <span class="pillar-badge" style="background:var(--plum);">かおを見て話す</span>
+      <span class="pillar-icon">📺</span>
+      <div class="pillar-title">テレビ電話</div>
+      <div class="pillar-desc">ご家族と、映像を見ながらお話しできます。</div>
+    </button>
+
     <button class="pillar pillar-lesson" onclick="startLesson()">
       <span class="pillar-badge" id="lesson-badge">今日のぶん</span>
       <span class="pillar-icon">☀️</span>
@@ -338,6 +394,33 @@
     </div>
 
     <div class="teaser" id="home-teaser" style="display:none;"></div>
+  </section>
+
+  <!-- VIDEO CALL -->
+  <section id="view-videocall" class="view">
+    <div class="header-row">
+      <button class="back-btn" onclick="go('home')" aria-label="もどる">←</button>
+      <h2 class="header-title">テレビ電話</h2>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="eyebrow" style="color:var(--plum-deep);">あなたの番号</div>
+      <p class="prompt-text" id="vc-my-id" style="font-variant-numeric:tabular-nums; letter-spacing:.06em;">------ ------</p>
+      <p class="hint-text">ご家族に、この番号を伝えておいてください。</p>
+    </div>
+    <div class="card">
+      <div class="eyebrow" style="color:var(--plum-deep);">よくかける相手</div>
+      <div id="vc-contact-list"></div>
+      <p class="hint-text" style="margin-top:18px; margin-bottom:6px;">新しく登録する</p>
+      <textarea id="vc-contact-name" style="min-height:auto; height:54px; margin-bottom:10px;" placeholder="お名前（例：さとし）"></textarea>
+      <input type="tel" id="vc-contact-id" placeholder="番号（6けた）" style="width:100%; padding:14px; border-radius:14px; border:2px solid var(--card-line); background:var(--paper); color:var(--ink); font-size:calc(18px*var(--fs-scale)); font-variant-numeric:tabular-nums; margin-bottom:12px;">
+      <button class="btn btn-outline" onclick="VideoCall.addContact()">登録する</button>
+      <p class="note" id="vc-contact-note" style="display:none; margin-top:8px;"></p>
+    </div>
+    <div class="card">
+      <div class="eyebrow" style="color:var(--plum-deep);">番号を直接入力してかける</div>
+      <input type="tel" id="vc-dial-id" placeholder="番号（6けた）" style="width:100%; padding:14px; border-radius:14px; border:2px solid var(--card-line); background:var(--paper); color:var(--ink); font-size:calc(18px*var(--fs-scale)); font-variant-numeric:tabular-nums; margin-bottom:12px;">
+      <button class="btn btn-primary" style="background:var(--plum);" onclick="VideoCall.callNumber(document.getElementById('vc-dial-id').value)">📺 電話をかける</button>
+    </div>
   </section>
 
   <!-- LESSON FLOW -->
@@ -470,6 +553,31 @@
     <button class="btn btn-ghost" onclick="clearCaptions()">文字を消す</button>
     <p class="note" id="ear-support-note" style="display:none;"></p>
   </div>
+</div>
+
+<div class="fullscreen-overlay" id="incoming-call-overlay">
+  <div class="incoming-call-box">
+    <div class="incoming-ring-icon">📺</div>
+    <p class="incoming-caller-label" id="incoming-caller-label">テレビ電話です</p>
+    <div class="incoming-call-buttons">
+      <button class="call-round-btn call-btn-decline" onclick="VideoCall.declineIncomingCall()" aria-label="でない">✕<span>でない</span></button>
+      <button class="call-round-btn call-btn-accept" onclick="VideoCall.acceptIncomingCall()" aria-label="でる">📞<span>でる</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="fullscreen-overlay" id="call-screen-overlay">
+  <div class="call-video-area">
+    <video id="vc-remote-video" autoplay playsinline></video>
+    <video id="vc-local-video" autoplay playsinline muted></video>
+    <p class="call-status-text" id="vc-status-text"></p>
+  </div>
+  <div class="call-controls" id="vc-controls" style="display:none;">
+    <button class="vc-control-btn" onclick="VideoCall.toggleMute(this)">🎤</button>
+    <button class="vc-control-btn vc-hangup" onclick="VideoCall.hangUp()">☎️</button>
+    <button class="vc-control-btn" onclick="VideoCall.toggleCamera(this)">📷</button>
+  </div>
+  <button class="btn btn-outline call-cancel-btn" id="vc-cancel-btn" onclick="VideoCall.cancelOutgoingCall()">よびだしをやめる</button>
 </div>
 
 <script>
@@ -802,6 +910,7 @@ function go(view){
   window.scrollTo(0,0);
   if(view==='home') renderHome();
   if(view==='settings') document.getElementById('username-input').value = state.userName || '';
+  if(view==='videocall' && window.VideoCall) window.VideoCall.renderIdAndContacts();
   const showFab = (view==='lesson' || view==='complete');
   document.getElementById('ear-fab').classList.toggle('hidden', !showFab);
   if(!showFab) closeEarOverlay();
@@ -1407,4 +1516,408 @@ document.getElementById('media-file-input').addEventListener('change', onMediaFi
 document.getElementById('backup-file-input').addEventListener('change', importBackupFile);
 loadMediaItems();
 renderHome();
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
+  collection, onSnapshot, query, where, getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAsZ_NunvG0TIiG8QeXy2prba4_4TRLxX8",
+  authDomain: "mimi-to-kokoro.firebaseapp.com",
+  projectId: "mimi-to-kokoro",
+  storageBucket: "mimi-to-kokoro.firebasestorage.app",
+  messagingSenderId: "428912528413",
+  appId: "1:428912528413:web:110632c19c1125ac0acaf4",
+  measurementId: "G-6KWHMQJ225"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+const ICE_SERVERS = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' }
+  ]
+};
+
+const VC_STORAGE_KEY = 'mimi-to-kokoro-vc-v1';
+function loadVCState(){
+  try{
+    const raw = localStorage.getItem(VC_STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {};
+}
+function saveVCState(s){
+  try{ localStorage.setItem(VC_STORAGE_KEY, JSON.stringify(s)); }catch(e){}
+}
+let vcState = loadVCState();
+if(!vcState.myId){
+  vcState.myId = String(Math.floor(100000 + Math.random()*900000));
+  saveVCState(vcState);
+}
+if(!Array.isArray(vcState.contacts)) vcState.contacts = [];
+
+let pc = null;
+let localStream = null;
+let remoteStream = null;
+let currentCallId = null;
+let unsubscribers = [];
+let ringTimeoutHandle = null;
+let ringIntervalHandle = null;
+let ringAudioCtx = null;
+let incomingCallId = null;
+
+function fmtId(id){
+  id = String(id||'------');
+  return id.replace(/(\d{3})(\d{3})/, '$1 $2');
+}
+
+function playRingTone(){
+  try{
+    if(!ringAudioCtx) ringAudioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const ctx = ringAudioCtx;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.frequency.value = 880;
+    o.type = 'sine';
+    g.gain.value = 0.15;
+    o.connect(g); g.connect(ctx.destination);
+    o.start();
+    setTimeout(()=>{ try{o.stop();}catch(e){} }, 400);
+  }catch(e){}
+}
+
+function clearUnsubs(){
+  unsubscribers.forEach(u=>{ try{u();}catch(e){} });
+  unsubscribers = [];
+}
+
+function initPeerConnection(){
+  const p = new RTCPeerConnection(ICE_SERVERS);
+  remoteStream = new MediaStream();
+  const remoteVideo = document.getElementById('vc-remote-video');
+  if(remoteVideo) remoteVideo.srcObject = remoteStream;
+  p.ontrack = (event)=>{
+    event.streams[0].getTracks().forEach(track=>remoteStream.addTrack(track));
+  };
+  return p;
+}
+
+async function getLocalMedia(){
+  localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+  const localVideo = document.getElementById('vc-local-video');
+  if(localVideo) localVideo.srcObject = localStream;
+  return localStream;
+}
+
+function attachLocalTracks(){
+  localStream.getTracks().forEach(track=>pc.addTrack(track, localStream));
+}
+
+async function cleanupCallDoc(callId){
+  try{
+    const offerCandsSnap = await getDocs(collection(db,'calls',callId,'offerCandidates'));
+    for(const d of offerCandsSnap.docs) await deleteDoc(d.ref);
+    const answerCandsSnap = await getDocs(collection(db,'calls',callId,'answerCandidates'));
+    for(const d of answerCandsSnap.docs) await deleteDoc(d.ref);
+    await deleteDoc(doc(db,'calls',callId));
+  }catch(e){}
+}
+
+function setCallStatusText(t){
+  const el = document.getElementById('vc-status-text');
+  if(el) el.textContent = t;
+}
+function showCallScreen(statusText){
+  document.getElementById('call-screen-overlay').classList.add('open');
+  document.getElementById('vc-controls').style.display = 'none';
+  document.getElementById('vc-cancel-btn').style.display = 'block';
+  setCallStatusText(statusText);
+}
+function hideCallScreen(){
+  document.getElementById('call-screen-overlay').classList.remove('open');
+  const remoteVideo = document.getElementById('vc-remote-video');
+  const localVideo = document.getElementById('vc-local-video');
+  if(remoteVideo) remoteVideo.srcObject = null;
+  if(localVideo) localVideo.srcObject = null;
+}
+function showCallControls(){
+  document.getElementById('vc-controls').style.display = 'flex';
+  document.getElementById('vc-cancel-btn').style.display = 'none';
+}
+function showIncomingOverlay(callId, callerId){
+  incomingCallId = callId;
+  document.getElementById('incoming-caller-label').textContent = `番号 ${fmtId(callerId)} さんから、テレビ電話です`;
+  document.getElementById('incoming-call-overlay').classList.add('open');
+  playRingTone();
+  ringIntervalHandle = setInterval(playRingTone, 2000);
+}
+function hideIncomingOverlay(){
+  document.getElementById('incoming-call-overlay').classList.remove('open');
+  if(ringIntervalHandle){ clearInterval(ringIntervalHandle); ringIntervalHandle=null; }
+}
+
+function endCallLocal(){
+  clearUnsubs();
+  if(ringTimeoutHandle){ clearTimeout(ringTimeoutHandle); ringTimeoutHandle=null; }
+  if(pc){ try{pc.close();}catch(e){} pc=null; }
+  if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream=null; }
+  remoteStream = null;
+  const callIdToClean = currentCallId;
+  currentCallId = null;
+  hideCallScreen();
+  hideIncomingOverlay();
+  if(callIdToClean) cleanupCallDoc(callIdToClean);
+}
+
+const VideoCall = {
+  renderIdAndContacts(){
+    const idEl = document.getElementById('vc-my-id');
+    if(idEl) idEl.textContent = fmtId(vcState.myId);
+    this.renderContactList();
+  },
+  renderContactList(){
+    const list = document.getElementById('vc-contact-list');
+    if(!list) return;
+    if(vcState.contacts.length===0){
+      list.innerHTML = '<p class="note">まだ登録されていません。</p>';
+      return;
+    }
+    list.innerHTML = vcState.contacts.map((c,i)=>`
+      <div class="settings-row">
+        <button class="btn btn-outline" style="width:auto; margin:0; padding:14px 18px; text-align:left; flex:1;" onclick="VideoCall.callNumber('${c.id}')">📺 ${window.escapeHtml(c.name)}（${fmtId(c.id)}）</button>
+        <button class="btn btn-outline" style="width:auto; margin:0; padding:10px 14px; font-size:calc(14px*var(--fs-scale));" onclick="VideoCall.removeContact(${i})">削除</button>
+      </div>
+    `).join('');
+  },
+  addContact(){
+    const nameEl = document.getElementById('vc-contact-name');
+    const idEl = document.getElementById('vc-contact-id');
+    const name = nameEl.value.trim();
+    const id = idEl.value.replace(/\D/g,'');
+    const noteEl = document.getElementById('vc-contact-note');
+    noteEl.style.display = 'block';
+    if(!name || id.length!==6){
+      noteEl.textContent = 'お名前と、6けたの番号を入力してください。';
+      return;
+    }
+    vcState.contacts.push({name, id});
+    saveVCState(vcState);
+    nameEl.value=''; idEl.value='';
+    noteEl.textContent = '登録しました。';
+    this.renderContactList();
+  },
+  removeContact(i){
+    if(!confirm('削除しますか？')) return;
+    vcState.contacts.splice(i,1);
+    saveVCState(vcState);
+    this.renderContactList();
+  },
+
+  async callNumber(targetId){
+    targetId = String(targetId).replace(/\D/g,'');
+    if(targetId.length!==6){ alert('番号は6けたで入力してください。'); return; }
+    if(targetId === vcState.myId){ alert('自分の番号にはかけられません。'); return; }
+    if(currentCallId){ return; }
+
+    showCallScreen(`${fmtId(targetId)} さんを、よびだしています…`);
+    try{
+      await getLocalMedia();
+    }catch(e){
+      hideCallScreen();
+      alert('カメラ・マイクを使えませんでした。設定をご確認ください。');
+      return;
+    }
+    pc = initPeerConnection();
+    attachLocalTracks();
+
+    const callDocRef = await addDoc(collection(db,'calls'), {
+      calleeId: targetId,
+      callerId: vcState.myId,
+      status: 'ringing',
+      createdAt: Date.now()
+    });
+    currentCallId = callDocRef.id;
+
+    const offerCandidates = collection(db,'calls',callDocRef.id,'offerCandidates');
+    const answerCandidates = collection(db,'calls',callDocRef.id,'answerCandidates');
+
+    pc.onicecandidate = (event)=>{
+      if(event.candidate) addDoc(offerCandidates, event.candidate.toJSON());
+    };
+
+    const offerDescription = await pc.createOffer();
+    await pc.setLocalDescription(offerDescription);
+    await updateDoc(callDocRef, {
+      offer: { type: offerDescription.type, sdp: offerDescription.sdp }
+    });
+
+    const unsubCall = onSnapshot(callDocRef, async (snap)=>{
+      const data = snap.data();
+      if(!data) return;
+      if(data.status === 'declined'){
+        setCallStatusText('お相手が、電話に出られませんでした。');
+        setTimeout(()=>endCallLocal(), 1800);
+        return;
+      }
+      if(data.status === 'ended' || data.status === 'missed'){
+        endCallLocal();
+        return;
+      }
+      if(data.answer && pc && !pc.currentRemoteDescription){
+        await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+        setCallStatusText('つながりました');
+        showCallControls();
+        if(ringTimeoutHandle){ clearTimeout(ringTimeoutHandle); ringTimeoutHandle=null; }
+      }
+    });
+    unsubscribers.push(unsubCall);
+
+    const unsubAnswerCands = onSnapshot(answerCandidates, (snap)=>{
+      snap.docChanges().forEach(change=>{
+        if(change.type==='added' && pc && pc.currentRemoteDescription){
+          pc.addIceCandidate(new RTCIceCandidate(change.doc.data()));
+        }
+      });
+    });
+    unsubscribers.push(unsubAnswerCands);
+
+    ringTimeoutHandle = setTimeout(async ()=>{
+      if(currentCallId===callDocRef.id && pc && !pc.currentRemoteDescription){
+        setCallStatusText('応答がありませんでした。');
+        try{ await updateDoc(callDocRef, {status:'missed'}); }catch(e){}
+        setTimeout(()=>endCallLocal(), 1500);
+      }
+    }, 45000);
+  },
+
+  cancelOutgoingCall(){
+    this.hangUp();
+  },
+
+  listenForIncomingCalls(){
+    const q = query(collection(db,'calls'), where('calleeId','==', vcState.myId), where('status','==','ringing'));
+    onSnapshot(q, (snap)=>{
+      snap.docChanges().forEach(change=>{
+        if(change.type==='added'){
+          const data = change.doc.data();
+          const age = Date.now() - (data.createdAt||0);
+          if(age < 45000 && !currentCallId && !incomingCallId){
+            showIncomingOverlay(change.doc.id, data.callerId);
+          }
+        }
+        if(change.type==='modified' || change.type==='removed'){
+          const data = change.doc.data();
+          if(change.doc.id===incomingCallId && (!data || data.status!=='ringing')){
+            hideIncomingOverlay();
+            incomingCallId = null;
+          }
+        }
+      });
+    });
+  },
+
+  async acceptIncomingCall(){
+    const callId = incomingCallId;
+    if(!callId) return;
+    hideIncomingOverlay();
+    showCallScreen('つないでいます…');
+    try{
+      await getLocalMedia();
+    }catch(e){
+      alert('カメラ・マイクを使えませんでした。設定をご確認ください。');
+      this.declineIncomingCall(callId);
+      hideCallScreen();
+      return;
+    }
+    pc = initPeerConnection();
+    attachLocalTracks();
+    currentCallId = callId;
+    incomingCallId = null;
+
+    const callDocRef = doc(db,'calls',callId);
+    const callSnap = await getDoc(callDocRef);
+    const callData = callSnap.data();
+    if(!callData || !callData.offer){ endCallLocal(); return; }
+
+    const offerCandidates = collection(db,'calls',callId,'offerCandidates');
+    const answerCandidates = collection(db,'calls',callId,'answerCandidates');
+
+    pc.onicecandidate = (event)=>{
+      if(event.candidate) addDoc(answerCandidates, event.candidate.toJSON());
+    };
+
+    await pc.setRemoteDescription(new RTCSessionDescription(callData.offer));
+    const answerDescription = await pc.createAnswer();
+    await pc.setLocalDescription(answerDescription);
+    await updateDoc(callDocRef, {
+      status:'accepted',
+      answer: { type: answerDescription.type, sdp: answerDescription.sdp }
+    });
+
+    const unsubOfferCands = onSnapshot(offerCandidates, (snap)=>{
+      snap.docChanges().forEach(change=>{
+        if(change.type==='added'){
+          pc.addIceCandidate(new RTCIceCandidate(change.doc.data()));
+        }
+      });
+    });
+    unsubscribers.push(unsubOfferCands);
+
+    const unsubCall = onSnapshot(callDocRef, (snap)=>{
+      const data = snap.data();
+      if(!data || data.status==='ended'){ endCallLocal(); }
+    });
+    unsubscribers.push(unsubCall);
+
+    setCallStatusText('つながりました');
+    showCallControls();
+  },
+
+  async declineIncomingCall(){
+    const callId = incomingCallId;
+    hideIncomingOverlay();
+    incomingCallId = null;
+    if(!callId) return;
+    try{ await updateDoc(doc(db,'calls',callId), {status:'declined'}); }catch(e){}
+    cleanupCallDoc(callId);
+  },
+
+  async hangUp(){
+    if(currentCallId){
+      try{ await updateDoc(doc(db,'calls',currentCallId), {status:'ended'}); }catch(e){}
+    }
+    endCallLocal();
+  },
+
+  toggleMute(btn){
+    if(!localStream) return;
+    const track = localStream.getAudioTracks()[0];
+    if(!track) return;
+    track.enabled = !track.enabled;
+    btn.textContent = track.enabled ? '🎤' : '🔇';
+    btn.classList.toggle('vc-control-off', !track.enabled);
+  },
+  toggleCamera(btn){
+    if(!localStream) return;
+    const track = localStream.getVideoTracks()[0];
+    if(!track) return;
+    track.enabled = !track.enabled;
+    btn.textContent = track.enabled ? '📷' : '🚫';
+    btn.classList.toggle('vc-control-off', !track.enabled);
+  },
+
+  init(){
+    this.renderIdAndContacts();
+    this.listenForIncomingCalls();
+  }
+};
+
+window.VideoCall = VideoCall;
+document.addEventListener('DOMContentLoaded', ()=>VideoCall.init());
 </script>
