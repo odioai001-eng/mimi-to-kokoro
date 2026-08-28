@@ -937,7 +937,7 @@ function renderHome(){
   const now = new Date();
   const week = ['日','月','火','水','木','金','土'];
   document.getElementById('home-date').innerHTML =
-    `<b>${now.getMonth()+1}月${now.getDate()}日</b>（${week[now.getDay()]}）`;
+    `<b>${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日</b>（${week[now.getDay()]}）`;
 
   const idx = dayIndexToday();
   const day = CURRICULUM[idx];
@@ -1023,7 +1023,7 @@ function renderLessonStep(){
       <div class="card">
         <div class="eyebrow">きょうは何の日</div>
         <p class="prompt-text">今日の日付を、声に出して言ってみましょう。</p>
-        <p class="hint-text">今日は ${now.getMonth()+1}月${now.getDate()}日（${week[now.getDay()]}曜日）です。</p>
+        <p class="hint-text">今日は ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${week[now.getDay()]}曜日）です。</p>
       </div>
       <button class="btn btn-primary" onclick="nextLessonStep()">言えました　→</button>`;
   }else if(lessonStep===1){
