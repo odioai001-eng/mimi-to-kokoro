@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>みみとこころ 操作マニュアル</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=BIZ+UDPGothic:wght@400;700&display=swap">
+<style>
+  :root{
+    --paper:#FBF3E7;
+    --card:#FFFCF6;
+    --card-line:#E7D9C4;
+    --ink:#3A2E22;
+    --ink-soft:#6B5C4B;
+    --persimmon:#E2672B;
+    --persimmon-deep:#B44E1E;
+    --persimmon-tint:#FBE2D2;
+    --indigo:#4C6B8A;
+    --indigo-deep:#37516C;
+    --indigo-tint:#DCE7F0;
+    --moss:#6B8C4E;
+    --moss-deep:#4F6A38;
+    --moss-tint:#E4EEDA;
+    --plum:#8B5B7E;
+    --plum-deep:#6E4364;
+    --plum-tint:#EDE0EA;
+    --gold:#D9A441;
+    --shadow: 0 10px 28px rgba(58,46,34,0.10);
+  }
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important;}
+  }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    font-size:17px;
+    line-height:1.8;
+  }
+  h1,h2,h3{
+    font-family:"Zen Maru Gothic","BIZ UDPGothic",sans-serif;
+    font-weight:700;
+    text-wrap:balance;
+    margin:0;
+  }
+  a{color:var(--indigo-deep);}
+  :focus-visible{outline:4px solid var(--gold); outline-offset:3px; border-radius:6px;}
+
+  .wrap{max-width:760px; margin:0 auto; padding:0 20px 80px;}
+
+  header.top{padding:44px 0 28px; text-align:center;}
+  .eyebrow{font-size:14px; letter-spacing:.12em; color:var(--persimmon-deep); font-weight:700; margin-bottom:10px;}
+  header.top h1{font-size:clamp(28px,5vw,40px); color:var(--ink); margin-bottom:10px;}
+  header.top p{color:var(--ink-soft); font-size:16px; max-width:52ch; margin:0 auto;}
+  .url-box{
+    display:inline-block; margin-top:18px; padding:10px 18px; background:var(--card);
+    border:2px solid var(--card-line); border-radius:12px; font-variant-numeric:tabular-nums;
+    font-size:14px; color:var(--indigo-deep); word-break:break-all;
+  }
+
+  nav.jump{
+    position:sticky; top:0; z-index:10; display:flex; gap:10px; justify-content:center;
+    padding:14px 20px; background:rgba(251,243,231,0.92); backdrop-filter:blur(4px);
+    border-bottom:2px solid var(--card-line); margin-bottom:8px;
+  }
+  nav.jump a{
+    text-decoration:none; font-weight:700; font-size:14px; padding:10px 18px; border-radius:999px;
+    background:var(--card); border:2px solid var(--card-line); color:var(--ink);
+  }
+
+  section.part{padding-top:48px;}
+  .part-head{text-align:center; margin-bottom:32px;}
+  .part-head .tag{
+    display:inline-block; font-size:13px; font-weight:700; letter-spacing:.06em;
+    padding:6px 14px; border-radius:999px; margin-bottom:12px;
+  }
+  .part-head h2{font-size:clamp(24px,4vw,32px);}
+  .tag.for-kazuko{background:var(--persimmon-tint); color:var(--persimmon-deep);}
+  .tag.for-family{background:var(--moss-tint); color:var(--moss-deep);}
+
+  .feature-card{
+    background:var(--card); border:2px solid var(--card-line); border-radius:22px;
+    padding:28px 26px; margin-bottom:24px; box-shadow:var(--shadow);
+    border-left:6px solid var(--card-line);
+  }
+  .feature-card.ear{border-left-color:var(--indigo);}
+  .feature-card.video{border-left-color:var(--plum);}
+  .feature-card.lesson{border-left-color:var(--persimmon);}
+  .feature-head{display:flex; align-items:center; gap:14px; margin-bottom:18px;}
+  .feature-icon{font-size:34px; line-height:1;}
+  .feature-head h3{font-size:22px;}
+  .feature-card.ear h3{color:var(--indigo-deep);}
+  .feature-card.video h3{color:var(--plum-deep);}
+  .feature-card.lesson h3{color:var(--persimmon-deep);}
+
+  ol.steps{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px;}
+  ol.steps li{
+    display:flex; gap:14px; align-items:flex-start; font-size:18px;
+  }
+  ol.steps li .num{
+    flex:none; width:30px; height:30px; border-radius:50%; background:var(--paper);
+    border:2px solid var(--card-line); display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink-soft);
+  }
+
+  .note-box{
+    background:var(--indigo-tint); border-radius:16px; padding:18px 20px; margin:28px 0;
+    font-size:15px; color:var(--ink);
+  }
+
+  .checklist{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px;}
+  .checklist li{
+    display:flex; gap:12px; align-items:flex-start; background:var(--card); border:2px solid var(--card-line);
+    border-radius:14px; padding:14px 18px; font-size:15px;
+  }
+  .checklist li::before{content:"☐"; font-size:18px; color:var(--moss-deep); flex:none;}
+
+  h3.sub{font-size:19px; color:var(--moss-deep); margin:36px 0 14px; padding-top:8px; border-top:2px solid var(--card-line);}
+  h3.sub:first-of-type{border-top:none; padding-top:0;}
+
+  ol.plain{padding-left:22px; margin:0 0 8px; display:flex; flex-direction:column; gap:8px; font-size:15px;}
+  ol.plain li{padding-left:4px;}
+
+  table{width:100%; border-collapse:collapse; font-size:14px; background:var(--card); border-radius:14px; overflow:hidden;}
+  .table-scroll{overflow-x:auto; border:2px solid var(--card-line); border-radius:14px; margin:10px 0 8px;}
+  th,td{padding:12px 14px; text-align:left; vertical-align:top; border-bottom:1px solid var(--card-line);}
+  th{background:var(--moss-tint); color:var(--moss-deep); font-weight:700; font-size:13px;}
+  tr:last-child td{border-bottom:none;}
+
+  code, .code-box{
+    font-family:ui-monospace,Consolas,monospace; font-size:12.5px; background:var(--ink); color:var(--paper);
+    border-radius:12px; padding:16px 18px; display:block; white-space:pre-wrap; word-break:break-all;
+    line-height:1.7; margin:10px 0;
+  }
+
+  footer{text-align:center; color:var(--ink-soft); font-size:13px; padding-top:60px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">みみとこころ</div>
+    <h1>使い方ガイド</h1>
+    <p>難聴と、軽い物忘れのある方のための、聞こえサポートと毎日のレッスンアプリです。</p>
+    <div class="url-box">https://odioai001-eng.github.io/mimi-to-kokoro/</div>
+  </header>
+
+  <nav class="jump">
+    <a href="#kazuko">和子さんの使い方</a>
+    <a href="#family">ご家族の設定ガイド</a>
+  </nav>
+
+  <section class="part" id="kazuko">
+    <div class="part-head">
+      <span class="tag for-kazuko">かんたん操作</span>
+      <h2>和子さんの使い方</h2>
+    </div>
+
+    <div class="feature-card ear">
+      <div class="feature-head">
+        <span class="feature-icon">👂</span>
+        <h3>みみサポート（相手の話を文字にする）</h3>
+      </div>
+      <ol class="steps">
+        <li><span class="num">1</span>ホーム画面の「みみサポート」をタップします。</li>
+        <li><span class="num">2</span>「はなしかけてもらう」の大きなボタンを押します。</li>
+        <li><span class="num">3</span>相手に話してもらうと、その内容が大きな文字で出てきます。</li>
+        <li><span class="num">4</span>終わったら、もう一度ボタンを押すと止まります。</li>
+      </ol>
+    </div>
+
+    <div class="feature-card video">
+      <div class="feature-head">
+        <span class="feature-icon">📺</span>
+        <h3>テレビ電話（かおを見て話す）</h3>
+      </div>
+      <ol class="steps">
+        <li><span class="num">1</span>ホーム画面の「テレビ電話」をタップします。</li>
+        <li><span class="num">2</span>かけたい相手の名前が並んでいるので、タップするだけで電話がかかります。</li>
+        <li><span class="num">3</span>誰かから電話がかかってきたときは、画面いっぱいに「でる」「でない」の緑と赤のボタンが出ます。緑の「でる」を押すと話せます。</li>
+        <li><span class="num">4</span>話し終わったら、赤い電話のボタンをタップします。</li>
+      </ol>
+    </div>
+
+    <div class="feature-card lesson">
+      <div class="feature-head">
+        <span class="feature-icon">☀️</span>
+        <h3>きょうのレッスン（毎日のお楽しみ）</h3>
+      </div>
+      <ol class="steps">
+        <li><span class="num">1</span>ホーム画面の「きょうのレッスン」をタップします。</li>
+        <li><span class="num">2</span>今日の日付を答えたり、思い出のお話をしたり、ことば遊びや、かんたんな問題に答えます。</li>
+        <li><span class="num">3</span>最後まで終えると、スタンプがもらえます。「あしたのお楽しみ」も出てきます。</li>
+      </ol>
+    </div>
+
+    <div class="note-box">
+      わからなくなったら、画面の左上の「←」ボタンか、いちばん上の名前をタップすると、いつでもホーム画面に戻れます。むずかしいことはありません、気楽に押してみてください。
+    </div>
+  </section>
+
+  <section class="part" id="family">
+    <div class="part-head">
+      <span class="tag for-family">セットアップ</span>
+      <h2>ご家族の設定ガイド</h2>
+    </div>
+
+    <h3 class="sub">はじめての設定チェックリスト</h3>
+    <ul class="checklist">
+      <li>設定 →「お名前」で、あいさつに使う名前を登録した</li>
+      <li>設定 →「文字の大きさ」を、見やすいサイズに合わせた</li>
+      <li>ブラウザのホーム画面に追加した（アイコンをタップするだけで開けるように）</li>
+      <li>テレビ電話の「あなたの番号」（6桁）を、他のご家族に伝えた</li>
+      <li>テレビ電話に、よく話す相手を登録した</li>
+      <li>思い出データベースに、写真を数枚登録した</li>
+    </ul>
+
+    <h3 class="sub">思い出データベースの登録方法</h3>
+    <ol class="plain">
+      <li>設定 →「思い出データベースを管理する」を開きます。</li>
+      <li>写真・動画・PDFのいずれか1つを選びます。</li>
+      <li>「質問」に、たとえば「これは誰でしょう？」のように入力します（🎙️ボタンで声でも入力できます）。</li>
+      <li>「答え・説明」に、あとで見返す内容を入力します（空でも構いません）。</li>
+      <li>「保存する」を押します。登録した内容は、レッスンの「思い出のお話」の時間に自動的に使われます。</li>
+    </ol>
+
+    <h3 class="sub">バックアップの取り方</h3>
+    <ol class="plain">
+      <li>設定 →「バックアップを保存する」を押すと、記録一式が1つのファイルにまとまってダウンロードされます。</li>
+      <li>このファイルは、Google DriveやOneDrive、パソコンなど、<strong>この端末以外の場所</strong>にも保管してください。</li>
+      <li>元に戻したいときは、同じ画面の「ファイルを選択」から、そのファイルを選ぶだけです。</li>
+    </ol>
+    <div class="note-box">
+      記録はこの端末のブラウザ内にのみ保存されます。特にiPadは、しばらく開かないと自動的にデータが消えることがあるため、月に一度程度のバックアップをおすすめします。
+    </div>
+
+    <h3 class="sub">よくあるトラブルと対処法</h3>
+    <div class="table-scroll">
+      <table>
+        <tr><th>症状</th><th>考えられる原因</th><th>対処法</th></tr>
+        <tr><td>みみサポートで文字が出ない</td><td>マイクの許可をしていない／非対応のブラウザ</td><td>Google Chromeで開き、マイクの許可を「許可する」にする</td></tr>
+        <tr><td>テレビ電話がつながらない</td><td>番号の入力ミス／ネットワークの制限</td><td>番号を確認する。自宅Wi-Fi同士でまず試す</td></tr>
+        <tr><td>データが消えた（特にiPad）</td><td>Safariの保存期間の仕様</td><td>バックアップから復元する。今後は定期的にバックアップを取る</td></tr>
+        <tr><td>文字が小さくて見づらい</td><td>文字の大きさ設定が小さいまま</td><td>設定 →「文字の大きさ」で「大」「特大」を選ぶ</td></tr>
+        <tr><td>ある日から急にテレビ電話だけ使えなくなった</td><td>Firestoreのテストモード期限切れ</td><td>下記「テレビ電話の期限について」を参照</td></tr>
+      </table>
+    </div>
+
+    <h3 class="sub">テレビ電話の期限について（重要）</h3>
+    <p style="font-size:15px;">
+      テレビ電話は無料のFirebaseという仕組みを使っています。作成時に選んだ「テストモード」は、<strong>作成から約30日で自動的に閉じてしまい</strong>、それ以降テレビ電話が使えなくなります。期限が近づく前に、以下の手順でルールを更新してください（一度行えば、以後は無期限に使えます）。
+    </p>
+    <ol class="plain">
+      <li><a href="https://console.firebase.google.com/" target="_blank" rel="noopener">Firebase Console</a> にログインし、プロジェクト「mimi-to-kokoro」を開く。</li>
+      <li>左メニュー「構築」→「Firestore Database」→ 上部の「ルール」タブを開く。</li>
+      <li>表示されている内容を、下のコードにすべて置き換える。</li>
+      <li>「公開」ボタンを押す。</li>
+    </ol>
+    <code>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /calls/{callId} {
+      allow read, write: if true;
+      match /{subcollection}/{docId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}</code>
+
+  </section>
+
+  <footer>みみとこころ — 使い方ガイド</footer>
+</div>
+</body>
+</html>
