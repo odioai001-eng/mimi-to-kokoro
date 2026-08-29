@@ -342,6 +342,10 @@
     pointer-events:none;
   }
   .vc-caption-box.show{opacity:1; pointer-events:auto;}
+  .vc-caption-diag{
+    font-size:12.5px; color:#D9A441; text-align:center; max-width:520px;
+    margin-top:10px; line-height:1.6;
+  }
   #vc-remote-video{width:100%; max-height:70vh; border-radius:20px; background:#000; object-fit:cover;}
   #vc-local-video{
     position:absolute; bottom:14px; right:14px; width:96px; height:128px; border-radius:14px;
@@ -592,6 +596,7 @@
     <p class="call-status-text" id="vc-status-text"></p>
     <p class="vc-caption-box" id="vc-caption-box"></p>
   </div>
+  <p class="vc-caption-diag" id="vc-caption-diag" style="display:none;"></p>
   <div class="call-controls" id="vc-controls" style="display:none;">
     <button class="vc-control-btn" onclick="VideoCall.toggleMute(this)">🎤</button>
     <button class="vc-control-btn" id="vc-caption-toggle" onclick="VideoCall.toggleCaptions(this)">💬</button>
@@ -1645,6 +1650,13 @@ function attachLocalTracks(){
   localStream.getTracks().forEach(track=>pc.addTrack(track, localStream));
 }
 
+let captionFailCount = 0;
+function setCaptionDiag(text){
+  const el = document.getElementById('vc-caption-diag');
+  if(!el) return;
+  if(text){ el.textContent = text; el.style.display = 'block'; }
+  else{ el.style.display = 'none'; }
+}
 function createCaptionRecognizer(){
   const R = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!R) return null;
@@ -1653,6 +1665,7 @@ function createCaptionRecognizer(){
   r.continuous = true;
   r.interimResults = false;
   r.onresult = (e)=>{
+    captionFailCount = 0;
     let text = '';
     for(let i=e.resultIndex; i<e.results.length; i++){
       if(e.results[i].isFinal) text += e.results[i][0].transcript;
@@ -1662,12 +1675,21 @@ function createCaptionRecognizer(){
       sendCaptionText(text);
     }
   };
-  r.onerror = ()=>{};
+  r.onerror = (e)=>{
+    if(e.error!=='no-speech') captionFailCount++;
+  };
   r.onend = ()=>{
-    if(captionListening){
-      captionRecognizer = createCaptionRecognizer();
-      if(captionRecognizer){ try{ captionRecognizer.start(); }catch(e){} }
+    if(!captionListening) return;
+    if(captionFailCount >= 3){
+      captionListening = false;
+      setCaptionDiag('この端末では、通話中の字幕を出せないようです（自分のマイクが通話とぶつかっている可能性があります）。');
+      return;
     }
+    setTimeout(()=>{
+      if(!captionListening) return;
+      captionRecognizer = createCaptionRecognizer();
+      if(captionRecognizer){ try{ captionRecognizer.start(); }catch(e){ captionFailCount++; } }
+    }, 400);
   };
   return r;
 }
@@ -1675,8 +1697,15 @@ function startCaptioning(){
   if(captionListening || !captionsEnabled) return;
   captionListening = true;
   captionLastFinal = '';
+  captionFailCount = 0;
+  setCaptionDiag('');
   captionRecognizer = createCaptionRecognizer();
-  if(captionRecognizer){ try{ captionRecognizer.start(); }catch(e){} }
+  if(!captionRecognizer){
+    captionListening = false;
+    setCaptionDiag('この端末では、字幕の機能が使えません。');
+    return;
+  }
+  try{ captionRecognizer.start(); }catch(e){ captionFailCount++; }
 }
 function stopCaptioning(){
   captionListening = false;
@@ -1696,6 +1725,7 @@ function showRemoteCaption(text){
   window.__captionHideTimer = setTimeout(()=>{ box.classList.remove('show'); }, 6000);
 }
 function setupDataChannel(){
+  setCaptionDiag('');
   dataChannel.onopen = ()=>{ if(captionsEnabled) startCaptioning(); };
   dataChannel.onclose = ()=>{ stopCaptioning(); };
   dataChannel.onmessage = (event)=>{
@@ -1726,6 +1756,7 @@ function showCallScreen(statusText){
   document.getElementById('vc-cancel-btn').style.display = 'block';
   document.getElementById('vc-caption-toggle').classList.remove('vc-control-off');
   document.getElementById('vc-caption-box').classList.remove('show');
+  setCaptionDiag('');
   captionsEnabled = true;
   setCallStatusText(statusText);
 }
