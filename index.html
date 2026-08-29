@@ -1651,6 +1651,9 @@ function attachLocalTracks(){
 }
 
 let captionFailCount = 0;
+let captionGotResult = false;
+let captionListenWatchdog = null;
+let dataChannelWatchdog = null;
 function setCaptionDiag(text){
   const el = document.getElementById('vc-caption-diag');
   if(!el) return;
@@ -1666,6 +1669,8 @@ function createCaptionRecognizer(){
   r.interimResults = false;
   r.onresult = (e)=>{
     captionFailCount = 0;
+    captionGotResult = true;
+    setCaptionDiag('');
     let text = '';
     for(let i=e.resultIndex; i<e.results.length; i++){
       if(e.results[i].isFinal) text += e.results[i][0].transcript;
@@ -1698,6 +1703,7 @@ function startCaptioning(){
   captionListening = true;
   captionLastFinal = '';
   captionFailCount = 0;
+  captionGotResult = false;
   setCaptionDiag('');
   captionRecognizer = createCaptionRecognizer();
   if(!captionRecognizer){
@@ -1705,15 +1711,28 @@ function startCaptioning(){
     setCaptionDiag('この端末では、字幕の機能が使えません。');
     return;
   }
-  try{ captionRecognizer.start(); }catch(e){ captionFailCount++; }
+  try{
+    captionRecognizer.start();
+  }catch(e){
+    captionFailCount++;
+  }
+  clearTimeout(captionListenWatchdog);
+  captionListenWatchdog = setTimeout(()=>{
+    if(captionListening && !captionGotResult){
+      setCaptionDiag('自分の声が、字幕用に認識されていません（マイクが通話と競合している可能性があります）。');
+    }
+  }, 12000);
 }
 function stopCaptioning(){
   captionListening = false;
+  clearTimeout(captionListenWatchdog);
   if(captionRecognizer){ try{ captionRecognizer.onend=null; captionRecognizer.stop(); }catch(e){} captionRecognizer=null; }
 }
 function sendCaptionText(text){
   if(dataChannel && dataChannel.readyState==='open'){
     try{ dataChannel.send(JSON.stringify({type:'caption', text})); }catch(e){}
+  }else{
+    setCaptionDiag('相手との字幕用の通信がまだつながっていません。');
   }
 }
 function showRemoteCaption(text){
@@ -1726,7 +1745,16 @@ function showRemoteCaption(text){
 }
 function setupDataChannel(){
   setCaptionDiag('');
-  dataChannel.onopen = ()=>{ if(captionsEnabled) startCaptioning(); };
+  clearTimeout(dataChannelWatchdog);
+  dataChannelWatchdog = setTimeout(()=>{
+    if(!dataChannel || dataChannel.readyState!=='open'){
+      setCaptionDiag('字幕の準備ができません（相手との追加の通信が制限されている可能性があります）。');
+    }
+  }, 8000);
+  dataChannel.onopen = ()=>{
+    clearTimeout(dataChannelWatchdog);
+    if(captionsEnabled) startCaptioning();
+  };
   dataChannel.onclose = ()=>{ stopCaptioning(); };
   dataChannel.onmessage = (event)=>{
     try{
@@ -1786,6 +1814,7 @@ function hideIncomingOverlay(){
 function endCallLocal(){
   clearUnsubs();
   if(ringTimeoutHandle){ clearTimeout(ringTimeoutHandle); ringTimeoutHandle=null; }
+  clearTimeout(dataChannelWatchdog);
   stopCaptioning();
   if(dataChannel){ try{dataChannel.close();}catch(e){} dataChannel=null; }
   if(pc){ try{pc.close();}catch(e){} pc=null; }
