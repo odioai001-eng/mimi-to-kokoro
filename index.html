@@ -334,6 +334,13 @@
   .call-btn-accept{background:#4E9D5C;}
 
   .call-video-area{position:relative; width:100%; max-width:640px; flex:1; display:flex; align-items:center; justify-content:center;}
+  .vc-caption-box{
+    position:absolute; left:12px; right:12px; bottom:10px; z-index:2;
+    background:rgba(0,0,0,0.6); border-radius:16px; padding:14px 18px;
+    font-size:calc(20px*var(--fs-scale)); line-height:1.6; text-align:center; color:#fff;
+    opacity:0; transition:opacity .25s ease; max-height:34%; overflow-y:auto;
+  }
+  .vc-caption-box.show{opacity:1;}
   #vc-remote-video{width:100%; max-height:70vh; border-radius:20px; background:#000; object-fit:cover;}
   #vc-local-video{
     position:absolute; bottom:14px; right:14px; width:96px; height:128px; border-radius:14px;
@@ -571,9 +578,11 @@
     <video id="vc-remote-video" autoplay playsinline></video>
     <video id="vc-local-video" autoplay playsinline muted></video>
     <p class="call-status-text" id="vc-status-text"></p>
+    <p class="vc-caption-box" id="vc-caption-box"></p>
   </div>
   <div class="call-controls" id="vc-controls" style="display:none;">
     <button class="vc-control-btn" onclick="VideoCall.toggleMute(this)">🎤</button>
+    <button class="vc-control-btn" id="vc-caption-toggle" onclick="VideoCall.toggleCaptions(this)">💬</button>
     <button class="vc-control-btn vc-hangup" onclick="VideoCall.hangUp()">☎️</button>
     <button class="vc-control-btn" onclick="VideoCall.toggleCamera(this)">📷</button>
   </div>
@@ -1571,6 +1580,11 @@ let ringTimeoutHandle = null;
 let ringIntervalHandle = null;
 let ringAudioCtx = null;
 let incomingCallId = null;
+let dataChannel = null;
+let captionRecognizer = null;
+let captionListening = false;
+let captionLastFinal = '';
+let captionsEnabled = true;
 
 function fmtId(id){
   id = String(id||'------');
@@ -1619,6 +1633,67 @@ function attachLocalTracks(){
   localStream.getTracks().forEach(track=>pc.addTrack(track, localStream));
 }
 
+function createCaptionRecognizer(){
+  const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!R) return null;
+  const r = new R();
+  r.lang = 'ja-JP';
+  r.continuous = true;
+  r.interimResults = false;
+  r.onresult = (e)=>{
+    let text = '';
+    for(let i=e.resultIndex; i<e.results.length; i++){
+      if(e.results[i].isFinal) text += e.results[i][0].transcript;
+    }
+    if(text && text !== captionLastFinal){
+      captionLastFinal = text;
+      sendCaptionText(text);
+    }
+  };
+  r.onerror = ()=>{};
+  r.onend = ()=>{
+    if(captionListening){
+      captionRecognizer = createCaptionRecognizer();
+      if(captionRecognizer){ try{ captionRecognizer.start(); }catch(e){} }
+    }
+  };
+  return r;
+}
+function startCaptioning(){
+  if(captionListening || !captionsEnabled) return;
+  captionListening = true;
+  captionLastFinal = '';
+  captionRecognizer = createCaptionRecognizer();
+  if(captionRecognizer){ try{ captionRecognizer.start(); }catch(e){} }
+}
+function stopCaptioning(){
+  captionListening = false;
+  if(captionRecognizer){ try{ captionRecognizer.onend=null; captionRecognizer.stop(); }catch(e){} captionRecognizer=null; }
+}
+function sendCaptionText(text){
+  if(dataChannel && dataChannel.readyState==='open'){
+    try{ dataChannel.send(JSON.stringify({type:'caption', text})); }catch(e){}
+  }
+}
+function showRemoteCaption(text){
+  const box = document.getElementById('vc-caption-box');
+  if(!box) return;
+  box.textContent = text;
+  box.classList.add('show');
+  clearTimeout(window.__captionHideTimer);
+  window.__captionHideTimer = setTimeout(()=>{ box.classList.remove('show'); }, 6000);
+}
+function setupDataChannel(){
+  dataChannel.onopen = ()=>{ if(captionsEnabled) startCaptioning(); };
+  dataChannel.onclose = ()=>{ stopCaptioning(); };
+  dataChannel.onmessage = (event)=>{
+    try{
+      const msg = JSON.parse(event.data);
+      if(msg.type==='caption' && captionsEnabled) showRemoteCaption(msg.text);
+    }catch(e){}
+  };
+}
+
 async function cleanupCallDoc(callId){
   try{
     const offerCandsSnap = await getDocs(collection(db,'calls',callId,'offerCandidates'));
@@ -1637,6 +1712,9 @@ function showCallScreen(statusText){
   document.getElementById('call-screen-overlay').classList.add('open');
   document.getElementById('vc-controls').style.display = 'none';
   document.getElementById('vc-cancel-btn').style.display = 'block';
+  document.getElementById('vc-caption-toggle').classList.remove('vc-control-off');
+  document.getElementById('vc-caption-box').classList.remove('show');
+  captionsEnabled = true;
   setCallStatusText(statusText);
 }
 function hideCallScreen(){
@@ -1665,6 +1743,8 @@ function hideIncomingOverlay(){
 function endCallLocal(){
   clearUnsubs();
   if(ringTimeoutHandle){ clearTimeout(ringTimeoutHandle); ringTimeoutHandle=null; }
+  stopCaptioning();
+  if(dataChannel){ try{dataChannel.close();}catch(e){} dataChannel=null; }
   if(pc){ try{pc.close();}catch(e){} pc=null; }
   if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream=null; }
   remoteStream = null;
@@ -1735,6 +1815,8 @@ const VideoCall = {
     }
     pc = initPeerConnection();
     attachLocalTracks();
+    dataChannel = pc.createDataChannel('captions');
+    setupDataChannel();
 
     const callDocRef = await addDoc(collection(db,'calls'), {
       calleeId: targetId,
@@ -1837,6 +1919,10 @@ const VideoCall = {
     }
     pc = initPeerConnection();
     attachLocalTracks();
+    pc.ondatachannel = (event)=>{
+      dataChannel = event.channel;
+      setupDataChannel();
+    };
     currentCallId = callId;
     incomingCallId = null;
 
@@ -1910,6 +1996,16 @@ const VideoCall = {
     track.enabled = !track.enabled;
     btn.textContent = track.enabled ? '📷' : '🚫';
     btn.classList.toggle('vc-control-off', !track.enabled);
+  },
+  toggleCaptions(btn){
+    captionsEnabled = !captionsEnabled;
+    btn.classList.toggle('vc-control-off', !captionsEnabled);
+    if(!captionsEnabled){
+      stopCaptioning();
+      document.getElementById('vc-caption-box').classList.remove('show');
+    }else if(dataChannel && dataChannel.readyState==='open'){
+      startCaptioning();
+    }
   },
 
   init(){
